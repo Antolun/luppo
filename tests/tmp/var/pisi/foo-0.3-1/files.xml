@@ -1,0 +1,11 @@
+<Files>
+    <File>
+        <Path>usr/bin/foo</Path>
+        <Type>data</Type>
+        <Size>15</Size>
+        <Uid>1000</Uid>
+        <Gid>1000</Gid>
+        <Mode>0o755</Mode>
+        <Hash>8df0164c4e34402669262f277c81be417994085c</Hash>
+    </File>
+</Files>

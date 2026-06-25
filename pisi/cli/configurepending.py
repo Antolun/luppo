@@ -1,0 +1,42 @@
+# -*- coding:utf-8 -*-
+#
+# Copyright (C) 2005 - 2007, TUBITAK/UEKAE
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# Please read the COPYING file.
+#
+
+import pisi.api
+import pisi.cli.command as command
+
+import gettext
+__trans = gettext.translation('pisi', fallback=True)
+_ = __trans.gettext
+
+
+class ConfigurePending(command.PackageOp, metaclass=command.autocommand):
+    __doc__ = _("""Configure pending packages
+
+If COMAR configuration of some packages were not
+done at installation time, they are added to a list
+of packages waiting to be configured. This command
+configures those packages.
+""")
+
+
+    def __init__(self, args):
+        super(ConfigurePending, self).__init__(args)
+
+    name = ("configure-pending", "cp")
+
+    def options(self, group):
+        super(ConfigurePending, self).options(group)
+
+    def run(self):
+
+        self.init()
+        pisi.api.configure_pending(self.args)

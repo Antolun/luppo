@@ -1,0 +1,219 @@
+<PISI>
+    <Distribution>
+        <SourceName>Pardus</SourceName>
+        <Description xml:lang="en">Sample Repository 1</Description>
+        <Version>2007</Version>
+        <Type>Core</Type>
+        <Obsoletes>
+            <Package>wengophone</Package>
+            <Package>rar</Package>
+        </Obsoletes>
+    </Distribution>
+    <Package>
+        <Name>foo</Name>
+        <Summary xml:lang="en">foo is a very useful package</Summary>
+        <Description xml:lang="en">foo is a very useful package that is known for its usefulness.</Description>
+        <IsA>app:gui</IsA>
+        <PartOf>util.misc</PartOf>
+        <License>GPL-2</License>
+        <History>
+            <Update release="3">
+                <Date>2010-08-12</Date>
+                <Version>0.3</Version>
+                <Comment>Last release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+            <Update release="2">
+                <Date>2010-07-22</Date>
+                <Version>0.3</Version>
+                <Comment>Second release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+            <Update release="1">
+                <Date>2010-07-12</Date>
+                <Version>0.3</Version>
+                <Comment>First release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+        </History>
+        <BuildHost>localhost</BuildHost>
+        <Distribution>Pardus</Distribution>
+        <DistributionRelease>2009</DistributionRelease>
+        <Architecture>i686</Architecture>
+        <InstalledSize>15</InstalledSize>
+        <PackageSize>1257</PackageSize>
+        <PackageHash>ed42ea482d86adc9b2cdf7e3db73dceb9f98e232</PackageHash>
+        <PackageURI>foo-0.3-3-p9-i686.pisi</PackageURI>
+        <PackageFormat>1.2</PackageFormat>
+        <Source>
+            <Name>foo</Name>
+            <Homepage>www.pardus.org.tr</Homepage>
+            <Packager>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Packager>
+        </Source>
+    </Package>
+    <Package>
+        <Name>bar</Name>
+        <Summary xml:lang="en">bar is a very useful package</Summary>
+        <Description xml:lang="en">bar is a very useful package that is known for its usefulness.</Description>
+        <IsA>app:gui</IsA>
+        <PartOf>util.misc</PartOf>
+        <License>GPL-2</License>
+        <Conflicts>
+            <Package releaseTo="10">spam</Package>
+        </Conflicts>
+        <History>
+            <Update release="1">
+                <Date>2010-07-12</Date>
+                <Version>0.3</Version>
+                <Comment>First release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+        </History>
+        <BuildHost>localhost</BuildHost>
+        <Distribution>Pardus</Distribution>
+        <DistributionRelease>2009</DistributionRelease>
+        <Architecture>i686</Architecture>
+        <InstalledSize>15</InstalledSize>
+        <PackageSize>1248</PackageSize>
+        <PackageHash>3b36711f03836a84887e9b8d5a4849e58fc177cf</PackageHash>
+        <PackageURI>bar-0.3-1-p9-i686.pisi</PackageURI>
+        <PackageFormat>1.2</PackageFormat>
+        <Source>
+            <Name>bar</Name>
+            <Homepage>www.pardus.org.tr</Homepage>
+            <Packager>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Packager>
+        </Source>
+    </Package>
+    <Package>
+        <Name>spam</Name>
+        <Summary xml:lang="en">spam is a very useful package</Summary>
+        <Description xml:lang="en">spam is a very useful package that is known for its usefulness.</Description>
+        <IsA>app:gui</IsA>
+        <PartOf>util.misc</PartOf>
+        <License>GPL-2</License>
+        <Conflicts>
+            <Package releaseTo="2">foo</Package>
+        </Conflicts>
+        <History>
+            <Update release="2">
+                <Date>2010-07-22</Date>
+                <Version>0.4</Version>
+                <Comment>Second release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+            <Update release="1">
+                <Date>2010-07-12</Date>
+                <Version>0.3</Version>
+                <Comment>First release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+        </History>
+        <BuildHost>localhost</BuildHost>
+        <Distribution>Pardus</Distribution>
+        <DistributionRelease>2009</DistributionRelease>
+        <Architecture>i686</Architecture>
+        <InstalledSize>15</InstalledSize>
+        <PackageSize>1272</PackageSize>
+        <PackageHash>d77b5ebd4b17e34d2c10e94559c683072ea6e5d9</PackageHash>
+        <PackageURI>spam-0.4-2-p9-i686.pisi</PackageURI>
+        <PackageFormat>1.2</PackageFormat>
+        <Source>
+            <Name>spam</Name>
+            <Homepage>www.pardus.org.tr</Homepage>
+            <Packager>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Packager>
+        </Source>
+    </Package>
+    <Package>
+        <Name>dialog</Name>
+        <Summary xml:lang="en">dialog is a very useful package</Summary>
+        <Description xml:lang="en">dialog is a very useful package that is known for its usefulness.</Description>
+        <IsA>app:cli</IsA>
+        <PartOf>util.misc</PartOf>
+        <License>GPL-2</License>
+        <History>
+            <Update release="1">
+                <Date>2010-07-12</Date>
+                <Version>0.3</Version>
+                <Comment>First release</Comment>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Update>
+        </History>
+        <BuildHost>localhost</BuildHost>
+        <Distribution>Pardus</Distribution>
+        <DistributionRelease>2009</DistributionRelease>
+        <Architecture>i686</Architecture>
+        <InstalledSize>15</InstalledSize>
+        <PackageSize>1232</PackageSize>
+        <PackageHash>0299fba050078059143856f62d6f5e18eb6bb175</PackageHash>
+        <PackageURI>dialog-0.3-1-p9-i686.pisi</PackageURI>
+        <PackageFormat>1.2</PackageFormat>
+        <Source>
+            <Name>dialog</Name>
+            <Homepage>www.pardus.org.tr</Homepage>
+            <Packager>
+                <Name>Joe Packager</Name>
+                <Email>joe@pardus.org.tr</Email>
+            </Packager>
+        </Source>
+    </Package>
+    <Component>
+        <Name>system</Name>
+        <LocalName xml:lang="en">System</LocalName>
+        <Summary xml:lang="en">System component</Summary>
+        <Description xml:lang="en">System packages</Description>
+        <Group>system</Group>
+        <Maintainer>
+            <Name>Joe Maintainer</Name>
+            <Email>joe@pardus.org.tr</Email>
+        </Maintainer>
+    </Component>
+    <Component>
+        <Name>system.base</Name>
+        <LocalName xml:lang="en">Base System</LocalName>
+        <Summary xml:lang="en">Sample Base System</Summary>
+        <Description xml:lang="en">Base System Packages</Description>
+        <Group>system</Group>
+        <Maintainer>
+            <Name>Joe Maintainer</Name>
+            <Email>joe@pardus.org.tr</Email>
+        </Maintainer>
+    </Component>
+    <Component>
+        <Name>util</Name>
+        <LocalName xml:lang="en">FIXME</LocalName>
+        <Summary xml:lang="en">FIXME</Summary>
+        <Description xml:lang="en">FIXME</Description>
+        <Group>accessories</Group>
+        <Maintainer>
+            <Name>Joe Maintainer</Name>
+            <Email>joe@pardus.org.tr</Email>
+        </Maintainer>
+    </Component>
+    <Component>
+        <Name>util.misc</Name>
+        <LocalName xml:lang="en">FIXME</LocalName>
+        <Summary xml:lang="en">FIXME</Summary>
+        <Description xml:lang="en">FIXME</Description>
+        <Group>accessories</Group>
+        <Maintainer>
+            <Name>Joe Maintainer</Name>
+            <Email>joe@pardus.org.tr</Email>
+        </Maintainer>
+    </Component>
+</PISI>

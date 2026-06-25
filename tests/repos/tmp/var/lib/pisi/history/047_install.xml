@@ -1,0 +1,7 @@
+<PISI>
+    <Operation type="install" date="2026-06-25" time="09:39">
+        <Package operation="install">
+            <Name>ctorrent</Name>
+            <After version="0.3" release="1"/></Package>
+    </Operation>
+</PISI>

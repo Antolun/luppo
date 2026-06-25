@@ -1,0 +1,8 @@
+<PISI>
+    <Operation type="repoupdate" date="2026-06-25" time="09:39">
+        <Repository operation="update">
+            <Name>repo1</Name>
+            <Uri>repos/repo1-bin/pisi-index.xml</Uri>
+        </Repository>
+    </Operation>
+</PISI>

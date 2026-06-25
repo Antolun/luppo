@@ -1,0 +1,7 @@
+<PISI>
+    <Operation type="remove" date="2026-06-25" time="09:39">
+        <Package operation="remove">
+            <Name>bar</Name>
+            <Before version="0.3" release="1"/></Package>
+    </Operation>
+</PISI>
