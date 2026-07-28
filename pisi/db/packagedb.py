@@ -18,7 +18,7 @@ import datetime
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
-import piksemel
+import xml.etree.ElementTree as ET
 
 import pisi.db
 import pisi.metadata
@@ -143,14 +143,14 @@ class PackageDB(lazydb.LazyDB):
         if not self.has_package(name, repo):
             raise Exception(_('Package %s not found.') % name)
 
-        pkg_doc = piksemel.parseString(self.pdb.get_item(name, repo))
+        pkg_doc = ET.fromstring(self.pdb.get_item(name, repo))
         return self.__get_version(pkg_doc) + self.__get_distro_release(pkg_doc)
 
     def get_version(self, name, repo):
         if not self.has_package(name, repo):
             raise Exception(_('Package %s not found.') % name)
 
-        pkg_doc = piksemel.parseString(self.pdb.get_item(name, repo))
+        pkg_doc = ET.fromstring(self.pdb.get_item(name, repo))
         return self.__get_version(pkg_doc)
 
     def get_package_repo(self, name, repo=None):
@@ -186,12 +186,12 @@ class PackageDB(lazydb.LazyDB):
 
         rev_deps = []
         for pkg, dep in rvdb:
-            node = piksemel.parseString(dep)
+            node = ET.fromstring(dep)
             dependency = pisi.dependency.Dependency()
-            dependency.package = node.firstChild().data()
-            if node.attributes():
-                attr = node.attributes()[0]
-                dependency.__dict__[attr] = node.getAttribute(attr)
+            dependency.package = node.text
+            if node.attrib:
+                attr = list(node.attrib.keys())[0]
+                dependency.__dict__[attr] = node.get(attr)
             rev_deps.append((pkg, dependency))
         return rev_deps
 
@@ -201,10 +201,10 @@ class PackageDB(lazydb.LazyDB):
 
         for pkg_name in self.rpdb.get_list_item():
             xml = self.pdb.get_item(pkg_name, repo)
-            package = piksemel.parseString(xml)
-            replaces_tag = package.getTag("Replaces")
+            package = ET.fromstring(xml)
+            replaces_tag = package.find("Replaces")
             if replaces_tag:
-                for node in replaces_tag.tags("Package"):
+                for node in replaces_tag.findall("Package"):
                     r = pisi.relation.Relation()
                     # XXX Is there a better way to do this?
                     r.decode(node, [])

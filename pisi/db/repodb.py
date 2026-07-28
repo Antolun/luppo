@@ -16,7 +16,7 @@ _ = __trans.gettext
 
 import os
 
-import piksemel
+import xml.etree.ElementTree as ET
 
 import pisi
 import pisi.uri
@@ -69,25 +69,24 @@ class RepoOrder:
     def set_status(self, repo_name, status):
         repo_doc = self._get_doc()
 
-        for r in repo_doc.tags("Repo"):
-            if r.getTagData("Name") == repo_name:
-                status_node = r.getTag("Status")
+        for r in repo_doc.findall("Repo"):
+            if r.find("Name").text == repo_name:
+                status_node = r.find("Status")
                 if status_node:
-                    status_node.firstChild().hide()
-                    status_node.insertData(status)
+                    status_node.text = status
                 else:
-                    status_node = r.insertTag("Status")
-                    status_node.insertData(status)
+                    status_node = ET.SubElement(r, "Status")
+                    status_node.text = status
 
         self._update(repo_doc)
 
     def get_status(self, repo_name):
         repo_doc = self._get_doc()
-        for r in repo_doc.tags("Repo"):
-            if r.getTagData("Name") == repo_name:
-                status_node = r.getTag("Status")
+        for r in repo_doc.findall("Repo"):
+            if r.find("Name").text == repo_name:
+                status_node = r.find("Status")
                 if status_node:
-                    status = status_node.firstChild().data()
+                    status = status_node.text
                     if status in ["active", "inactive"]:
                         return status
         return "inactive"
@@ -95,9 +94,9 @@ class RepoOrder:
     def remove(self, repo_name):
         repo_doc = self._get_doc()
 
-        for r in repo_doc.tags("Repo"):
-            if r.getTagData("Name") == repo_name:
-                r.hide()
+        for r in repo_doc.findall("Repo"):
+            if r.find("Name").text == repo_name:
+                repo_doc.remove(r)
 
         self._update(repo_doc)
 
@@ -114,7 +113,7 @@ class RepoOrder:
     def _update(self, doc):
         repos_file = os.path.join(ctx.config.info_dir(), ctx.const.repos)
         with open(repos_file, "w") as f:
-            f.write("%s\n" % doc.toPrettyString())
+            f.write("%s\n" % ET.tostring(doc, encoding="utf-8"))
         self._doc = None
         self.repos = self._get_repos()
 
@@ -122,9 +121,9 @@ class RepoOrder:
         if self._doc is None:
             repos_file = os.path.join(ctx.config.info_dir(), ctx.const.repos)
             if os.path.exists(repos_file):
-                self._doc = piksemel.parse(repos_file)
+                self._doc = ET.parse(repos_file).getroot()
             else:
-                self._doc = piksemel.newDocument("REPOS")
+                self._doc = ET.Element("REPOS")
 
         return self._doc
 
@@ -132,10 +131,10 @@ class RepoOrder:
         repo_doc = self._get_doc()
         order = {}
 
-        for r in repo_doc.tags("Repo"):
-            media = r.getTagData("Media")
-            name = r.getTagData("Name")
-            status = r.getTagData("Status")
+        for r in repo_doc.findall("Repo"):
+            media = r.find("Media").text
+            name = r.find("Name").text
+            status = r.find("Status").text
             order.setdefault(media, []).append(name)
 
         return order
@@ -167,10 +166,10 @@ class RepoDB(lazydb.LazyDB):
 
         if not os.path.exists(index_path):
             ctx.ui.warning(_("%s repository needs to be updated") % repo_name)
-            return piksemel.newDocument("PISI")
+            return ET.Element("PISI")
 
         try:
-            return piksemel.parse(index_path)
+            return ET.parse(index_path).getroot()
         except Exception as e:
             raise RepoError(_("Error parsing repository index information. Index file does not exist or is malformed."))
 

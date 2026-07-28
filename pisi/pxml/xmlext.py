@@ -10,27 +10,16 @@
 # Please read the COPYING file.
 #
 
-"""
- xmlext is a helper module for accessing XML files using
- xml.dom.minidom . It is a convenient wrapper for some
- DOM functions, and provides path based get/add functions
- as in KDE API.
-
- function names are mixedCase for compatibility with minidom,
- an 'old library'
-
- this implementation uses piksemel
-"""
-
 import gettext
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
 import pisi
-import piksemel as iks
+import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 
-parse = iks.parse
-newDocument = iks.newDocument
+parse = ET.parse
+newDocument = ET.Element
 
 def getAllNodes(node, tagPath):
     """retrieve all nodes that match a given tag path."""
@@ -72,7 +61,7 @@ def getNodeText(node, tagpath = ""):
     child = node.firstChild()
     if not child:
         return None
-    if child.type() == iks.DATA:
+    if child.type() == minidom.Text.nodeType:
         # in any case, strip whitespaces...
         return child.data().strip()
     else:
@@ -98,7 +87,7 @@ def getNode(node, tagpath):
     # iterative code to search for the path
     for tag in tags:
         currentNode = None
-        for child in node.tags():
+        for child in node:
             if child.name() == tag:
                 currentNode = child
                 break
@@ -164,4 +153,4 @@ def addText(node, tagpath, text):
     node.insertData(text)
 
 def newNode(node, tag):
-    return iks.newDocument(tag)
+    return minidom.Document()

@@ -21,7 +21,7 @@
 # libXScrnSaver xbitmaps libXft libXTrap liboldX xorg-app xorg-data xorg-util
 # xorg-input font-util xorg-font zorg jimmac-xcursor xorg-video xorg-server psmisc
 # ddcxinfos texinfo groff groff-utf8 man man-pages coolplug mkinitramfs parted
-# grub udev libgcc klibc lzma nss-mdns mudur gzip ncompress tar piksemel file
+# grub udev libgcc klibc lzma nss-mdns mudur gzip ncompress tar file
 # python-bsddb3 pisi nano glibc lib-compat miscfiles libpng jpeg libcap
 # openldap-client bc dmidecode fbgrab splashutils-misc splashutils pyparted
 # openssh sysfsutils pcmciautils zip libusb linux-headers memtest86 procps curl

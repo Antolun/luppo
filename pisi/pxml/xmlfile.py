@@ -10,22 +10,11 @@
 # Please read the COPYING file.
 #
 
-"""
- XmlFile class further abstracts a dom object using the
- high-level dom functions provided in xmlext module (and sorely lacking
- in xml.dom :( )
-
- function names are mixedCase for compatibility with minidom,
- an 'old library'
-
- this implementation uses piksemel
-"""
-
 import gettext
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
-import piksemel as iks
+import xml.etree.ElementTree as ET
 
 import pisi
 import pisi.file
@@ -41,7 +30,7 @@ class XmlFile(object):
 
     def newDocument(self):
         """clear DOM"""
-        self.doc = iks.newDocument(self.rootTag)
+        self.doc = ET.Element(self.rootTag)
 
     def unlink(self):
         """deallocate DOM structure"""
@@ -56,7 +45,7 @@ class XmlFile(object):
         if isinstance(xml, bytes):
             xml = xml.decode("utf-8")
         try:
-            self.doc = iks.parseString(xml)
+            self.doc = ET.fromstring(xml)
             return self.doc
         except Exception as e:
             raise Error(_("String '%s' has invalid XML") % (xml))
@@ -79,7 +68,7 @@ class XmlFile(object):
                                                 compress=compress,sign=sign, copylocal=copylocal)
 
         try:
-            self.doc = iks.parse(localpath)
+            self.doc = ET.parse(localpath).getroot()
             return self.doc
         except OSError as e:
             raise Error(_("Unable to read file (%s): %s") %(localpath,e))
@@ -88,7 +77,7 @@ class XmlFile(object):
 
     def writexml(self, uri, tmpDir = '/tmp', sha1sum=False, compress=None, sign=None):
         f = pisi.file.File(uri, pisi.file.File.write, sha1sum=sha1sum, compress=compress, sign=sign)
-        f.write(self.doc.toPrettyString())
+        f.write(ET.tostring(self.doc, encoding="utf-8"))
         f.close()
 
     def writexmlfile(self, f):

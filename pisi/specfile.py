@@ -22,7 +22,7 @@ _ = __trans.gettext
 
 # standard python modules
 import os.path
-import piksemel
+import xml.etree.ElementTree as ET
 
 # pisi modules
 import pisi.pxml.xmlfile as xmlfile
@@ -430,10 +430,10 @@ class SpecFile(xmlfile.XmlFile, metaclass=autoxml.autoxml):
 
     def _set_i18n(self, tag, inst):
         try:
-            for summary in tag.tags("Summary"):
-                inst.summary[summary.getAttribute("xml:lang")] = summary.firstChild().data()
-            for desc in tag.tags("Description"):
-                inst.description[desc.getAttribute("xml:lang")] = desc.firstChild().data()
+            for summary in tag.findall("Summary"):
+                inst.summary[summary.get("xml:lang")] = summary.text
+            for desc in tag.findall("Description"):
+                inst.description[desc.get("xml:lang")] = desc.text
         except AttributeError:
             raise Error(_("translations.xml file is badly formed."))
 
@@ -442,17 +442,17 @@ class SpecFile(xmlfile.XmlFile, metaclass=autoxml.autoxml):
         if not os.path.exists(path):
             return
         try:
-            doc = piksemel.parse(path)
+            doc = ET.parse(path).getroot()
         except Exception as e:
             raise Error(_("File '%s' has invalid XML") % (path) )
 
-        if doc.getTag("Source").getTagData("Name") == self.source.name:
+        if doc.find("Source").get("Name") == self.source.name:
             # Set source package translations
-            self._set_i18n(doc.getTag("Source"), self.source)
+            self._set_i18n(doc.find("Source"), self.source)
 
-        for pak in doc.tags("Package"):
+        for pak in doc.findall("Package"):
             for inst in self.packages:
-                if inst.name == pak.getTagData("Name"):
+                if inst.name == pak.get("Name"):
                     self._set_i18n(pak, inst)
                     break
 

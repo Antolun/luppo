@@ -19,7 +19,7 @@ import gettext
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
-import piksemel
+import xml.etree.ElementTree as ET
 
 # PiSi
 import pisi
@@ -84,8 +84,8 @@ class InstallDB(lazydb.LazyDB):
     def __add_to_revdeps(self, package, revdeps):
         metadata_xml = os.path.join(self.package_path(package), ctx.const.metadata_xml)
         try:
-            meta_doc = piksemel.parse(metadata_xml)
-            pkg = meta_doc.getTag("Package")
+            meta_doc = ET.parse(metadata_xml).getroot()
+            pkg = meta_doc.find("Package")
         except:
             pkg = None
 
@@ -96,15 +96,15 @@ class InstallDB(lazydb.LazyDB):
             del self.installed_db[package]
             return
 
-        deps = pkg.getTag('RuntimeDependencies')
+        deps = pkg.find('RuntimeDependencies')
         if deps:
-            for dep in deps.tags("Dependency"):
-                revdep = revdeps.setdefault(dep.firstChild().data(), {})
-                revdep[package] = dep.toString()
-            for anydep in deps.tags("AnyDependency"):
-                for dep in anydep.tags("Dependency"):
-                    revdep = revdeps.setdefault(dep.firstChild().data(), {})
-                    revdep[package] = anydep.toString()
+            for dep in deps.findall("Dependency"):
+                revdep = revdeps.setdefault(dep.text, {})
+                revdep[package] = ET.tostring(dep)
+            for anydep in deps.findall("AnyDependency"):
+                for dep in anydep.findall("Dependency"):
+                    revdep = revdeps.setdefault(dep.text, {})
+                    revdep[package] = ET.tostring(anydep)
 
     def __generate_revdeps(self):
         revdeps = {}
@@ -135,27 +135,27 @@ class InstallDB(lazydb.LazyDB):
         return found
 
     def __get_version(self, meta_doc):
-        history = meta_doc.getTag("Package").getTag("History")
-        version = history.getTag("Update").getTagData("Version")
-        release = history.getTag("Update").getAttribute("release")
+        history = meta_doc.find("Package").find("History")
+        version = history.find("Update").get("Version")
+        release = history.find("Update").get("release")
 
         # TODO Remove None
         return version, release, None
 
     def __get_distro_release(self, meta_doc):
-        distro = meta_doc.getTag("Package").getTagData("Distribution")
-        release = meta_doc.getTag("Package").getTagData("DistributionRelease")
+        distro = meta_doc.find("Package").get("Distribution")
+        release = meta_doc.find("Package").get("DistributionRelease")
 
         return distro, release
 
     def get_version_and_distro_release(self, package):
         metadata_xml = os.path.join(self.package_path(package), ctx.const.metadata_xml)
-        meta_doc = piksemel.parse(metadata_xml)
+        meta_doc = ET.parse(metadata_xml).getroot()
         return self.__get_version(meta_doc) + self.__get_distro_release(meta_doc)
 
     def get_version(self, package):
         metadata_xml = os.path.join(self.package_path(package), ctx.const.metadata_xml)
-        meta_doc = piksemel.parse(metadata_xml)
+        meta_doc = ET.parse(metadata_xml).getroot()
         return self.__get_version(meta_doc)
 
     def get_files(self, package):
@@ -221,12 +221,12 @@ class InstallDB(lazydb.LazyDB):
         return info
 
     def __make_dependency(self, depStr):
-        node = piksemel.parseString(depStr)
+        node = ET.fromstring(depStr)
         dependency = pisi.dependency.Dependency()
-        dependency.package = node.firstChild().data()
-        if node.attributes():
-            attr = node.attributes()[0]
-            dependency.__dict__[attr] = node.getAttribute(attr)
+        dependency.package = node.text
+        if node.attrib:
+            attr = list(node.attrib.keys())[0]
+            dependency.__dict__[attr] = node.get(attr)
         return dependency
 
     def __create_dependency(self, depStr):

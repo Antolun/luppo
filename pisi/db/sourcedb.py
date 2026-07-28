@@ -13,7 +13,7 @@
 import re
 import gzip
 
-import piksemel
+import xml.etree.ElementTree as ET
 
 import pisi
 import pisi.specfile
@@ -128,11 +128,11 @@ class SourceDB(lazydb.LazyDB):
 
         rev_deps = []
         for pkg, dep in rvdb:
-            node = piksemel.parseString(dep)
+            node = ET.fromstring(dep)
             dependency = pisi.dependency.Dependency()
-            dependency.package = node.firstChild().data()
-            if node.attributes():
-                attr = node.attributes()[0]
-                dependency.__dict__[attr] = node.getAttribute(attr)
+            dependency.package = node.text
+            if node.attrib:
+                attr = list(node.attrib.keys())[0]
+                dependency.__dict__[attr] = node.get(attr)
             rev_deps.append((pkg, dependency))
         return rev_deps
