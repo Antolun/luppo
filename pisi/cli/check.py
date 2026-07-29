@@ -85,6 +85,10 @@ class Check(command.Command, metaclass=command.autocommand):
         prefix = _('Checking integrity of %s')
 
         # Determine maximum length of messages for proper formatting
+        if not pkgs:
+            ctx.ui.info(_("Denetlenecek kurulu paket bulunamadı."))
+            return
+
         maxpkglen = max([len(_p) for _p in pkgs])
 
         for pkg in pkgs:

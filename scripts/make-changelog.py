@@ -4,7 +4,7 @@
 import os
 import urllib2
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 first_revision = "27898"
 accounts_url = "http://svn.pardus.org.tr/uludag/trunk/common/accounts"
@@ -72,13 +72,13 @@ def create_log_entry(author, date, msg):
 
 if __name__ == "__main__":
     p = os.popen("svn log -r%s:HEAD --xml" % first_revision)
-    doc = ET.fromstring(p.read())
+    doc = etree.fromstring(p.read())
 
     entries = []
     for log_entry in doc.findall("logentry"):
-        author = log_entry.get("author")
-        date = log_entry.get("date")
-        msg = log_entry.get("msg")
+        author = log_entry.find("author").text
+        date = log_entry.find("date").text
+        msg = log_entry.find("msg").text
 
         entry = create_log_entry(author, date, msg.strip())
         if entry:

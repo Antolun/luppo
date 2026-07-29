@@ -13,7 +13,7 @@
 import re
 import gzip
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 import pisi
 import pisi.specfile
@@ -49,22 +49,22 @@ class SourceDB(lazydb.LazyDB):
         sources = {}
         pkgstosrc = {}
 
-        for spec in doc.tags("SpecFile"):
-            src_name = spec.getTag("Source").getTagData("Name")
+        for spec in doc.findall("SpecFile"):
+            src_name = spec.find("Source").find("Name").text
             sources[src_name] = gzip.zlib.compress(spec.toString().encode('utf-8'))
-            for package in spec.tags("Package"):
-                pkgstosrc[package.getTagData("Name")] = src_name
+            for package in spec.findall("Package"):
+                pkgstosrc[package.find("Name").text] = src_name
 
         return sources, pkgstosrc
 
     def __generate_revdeps(self, doc):
         revdeps = {}
-        for spec in doc.tags("SpecFile"):
-            name = spec.getTag("Source").getTagData("Name")
-            deps = spec.getTag("Source").getTag("BuildDependencies")
+        for spec in doc.findall("SpecFile"):
+            name = spec.find("Source").find("Name").text
+            deps = spec.find("Source").find("BuildDependencies")
             if deps:
-                for dep in deps.tags("Dependency"):
-                    revdeps.setdefault(dep.firstChild().data(), set()).add((name, dep.toString()))
+                for dep in deps.findall("Dependency"):
+                    revdeps.setdefault(dep.text, set()).add((name, dep.toString()))
         return revdeps
 
     def list_sources(self, repo=None):
@@ -128,7 +128,7 @@ class SourceDB(lazydb.LazyDB):
 
         rev_deps = []
         for pkg, dep in rvdb:
-            node = ET.fromstring(dep)
+            node = etree.fromstring(dep)
             dependency = pisi.dependency.Dependency()
             dependency.package = node.text
             if node.attrib:

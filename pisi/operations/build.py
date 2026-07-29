@@ -130,9 +130,8 @@ def exclude_special_files(filepath, fileinfo, ag):
         if re.match(patterns["libtool"], fileinfo) and \
                 not os.path.islink(filepath):
             ladata = file(filepath).read()
-            new_ladata = re.sub("-L%s/\S*" % ctx.config.tmp_dir(), "", ladata)
-            new_ladata = re.sub("%s/\S*/install/" % ctx.config.tmp_dir(), "/",
-                                new_ladata)
+            new_ladata = re.sub(r"-L%s/\S*" % ctx.config.tmp_dir(), "", ladata)
+            new_ladata = re.sub(r"%s/\S*/install/" % ctx.config.tmp_dir(), "/", new_ladata)
             if new_ladata != ladata:
                 file(filepath, "w").write(new_ladata)
 

@@ -15,6 +15,8 @@ import gettext
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
+from lxml import etree
+
 import pisi
 import pisi.db.repodb
 import pisi.db.itembyrepo
@@ -45,19 +47,22 @@ class ComponentDB(lazydb.LazyDB):
 
     def __generate_packages(self, doc):
         components = {}
-        for pkg in doc.tags("Package"):
-            components.setdefault(pkg.getTagData("PartOf"), []).append(pkg.getTagData("Name"))
+        for pkg in doc.findall("Package"):
+            components.setdefault(pkg.find("PartOf").text, []).append(pkg.find("Name").text)
         return components
 
     def __generate_sources(self, doc):
         components = {}
-        for spec in doc.tags("SpecFile"):
-            src = spec.getTag("Source")
-            components.setdefault(src.getTagData("PartOf"), []).append(src.getTagData("Name"))
+        for spec in doc.findall("SpecFile"):
+            src = spec.find("Source")
+            components.setdefault(src.find("PartOf").text, []).append(src.find("Name").text)
         return components
  
     def __generate_components(self, doc):
-        return dict(map(lambda x: (x.getTagData("Name"), x.toString()), doc.tags("Component")))
+        return {
+            x.findtext("Name"): etree.tostring(x, encoding="unicode")
+            for x in doc.findall("Component")
+        }
 
     def has_component(self, name, repo = None):
         return self.cdb.has_item(name, repo)

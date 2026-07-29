@@ -15,11 +15,10 @@ __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
 import pisi
-import xml.etree.ElementTree as ET
-import xml.dom.minidom as minidom
+from lxml import etree
 
-parse = ET.parse
-newDocument = ET.Element
+parse = etree.parse
+newDocument = etree.Element
 
 def getAllNodes(node, tagPath):
     """retrieve all nodes that match a given tag path."""
@@ -38,8 +37,9 @@ def getAllNodes(node, tagPath):
     return nodeList
 
 def getNodeAttribute(node, attrname):
-    """get named attribute from DOM node"""
-    return node.getAttribute(attrname)
+    if node is not None:
+        return node.get(attrname, "")
+    return ""
 
 def setNodeAttribute(node, attrname, value):
     """get named attribute from DOM node"""
@@ -47,25 +47,28 @@ def setNodeAttribute(node, attrname, value):
 
 def getChildElts(parent):
     """get only child elements"""
-    return [x for x in parent.tags()]
+    return [x for x in parent.findall("*")]
 
 def getTagByName(parent, childName):
-    return [x for x in parent.tags(childName)]
+    return [x for x in parent.findall(childName)]
 
 def getNodeText(node, tagpath = ""):
     """get the first child and expect it to be text!"""
-    if tagpath!="":
+    if tagpath != "":
         node = getNode(node, tagpath)
-        if not node:
+        if node is None:
             return None
-    child = node.firstChild()
-    if not child:
+
+    if node is None:
         return None
-    if child.type() == minidom.Text.nodeType:
-        # in any case, strip whitespaces...
-        return child.data().strip()
-    else:
+
+    if node.text is not None:
+        return node.text.strip()
+    
+    if len(node) > 0:
         raise XmlError(_("getNodeText: Expected text node, got something else!"))
+
+    return None
 
 def getChildText(node_s, tagpath):
     """get the text of a child at the end of a tag path"""
@@ -87,11 +90,11 @@ def getNode(node, tagpath):
     # iterative code to search for the path
     for tag in tags:
         currentNode = None
-        for child in node:
-            if child.name() == tag:
+        for child in node.findall(tag):
+            if child.tag == tag:
                 currentNode = child
                 break
-        if not currentNode:
+        if currentNode is None:
             return None
         else:
             node = currentNode
@@ -109,9 +112,11 @@ def createTagPath(node, tags):
 def addTagPath(node, tags, newnode=None):
     """add newnode at the end of a tag chain, smart one"""
     node = createTagPath(node, tags)
-    if newnode:                     # node to add specified
-        node.insertNode(newnode)
-    return node
+    if newnode is not None:         # node to add specified
+        node.append(newnode)
+        return newnode
+    else:
+        return node
 
 def addNode(node, tagpath, newnode = None, branch=True):
     """add a new node at the end of the tree and returns it
@@ -153,4 +158,4 @@ def addText(node, tagpath, text):
     node.insertData(text)
 
 def newNode(node, tag):
-    return minidom.Document()
+    return etree.Element(tag)

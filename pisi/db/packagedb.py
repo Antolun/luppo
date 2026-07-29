@@ -18,7 +18,7 @@ import datetime
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 import pisi.db
 import pisi.metadata
@@ -52,29 +52,36 @@ class PackageDB(lazydb.LazyDB):
         self.rpdb = pisi.db.itembyrepo.ItemByRepo(self.__replaces)
 
     def __generate_replaces(self, doc):
-        return [x.getTagData("Name") for x in doc.tags("Package") if x.getTagData("Replaces")]
+        return [x.find("Name").text for x in doc.findall("Package") if x.find("Replaces") is not None]
 
     def __generate_obsoletes(self, doc):
-        distribution = doc.getTag("Distribution")
-        obsoletes = distribution and distribution.getTag("Obsoletes")
-        src_repo = doc.getTag("SpecFile") is not None
-
-        if not obsoletes or src_repo:
+        obsoletes = doc.find("Obsoletes")
+        if obsoletes is None:
             return []
-
-        return list(map(lambda x: x.firstChild().data(), obsoletes.tags("Package")))
+        
+        return [
+            pkg.text.strip()
+            for pkg in obsoletes.findall("Package")
+            if pkg.text
+        ]
 
     def __generate_packages(self, doc):
-        return dict(map(lambda x: (x.getTagData("Name"), gzip.zlib.compress(x.toString().encode('utf-8'))), doc.tags("Package")))
+        return {
+            x.findtext("Name"): gzip.zlib.compress(etree.tostring(x, encoding="utf-8"))
+            for x in doc.findall("Package")
+        }
 
     def __generate_revdeps(self, doc):
         revdeps = {}
-        for node in doc.tags("Package"):
-            name = node.getTagData('Name')
-            deps = node.getTag('RuntimeDependencies')
-            if deps:
-                for dep in deps.tags("Dependency"):
-                    revdeps.setdefault(dep.firstChild().data(), set()).add((name, dep.toString()))
+        for pkg in doc.findall("Package"):
+            name = pkg.findtext("Name")
+            deps = pkg.find("RuntimeDependencies")
+            if deps is not None:
+                for dep in deps.findall("Dependency"):
+                    dep_name = dep.text.strip() if dep.text else ""
+                    if dep_name:
+                        dep_xml = etree.tostring(dep, encoding="unicode")
+                        revdeps.setdefault(dep_name, set()).add((name, dep_xml))
         return revdeps
 
     def has_package(self, name, repo=None):
@@ -143,14 +150,14 @@ class PackageDB(lazydb.LazyDB):
         if not self.has_package(name, repo):
             raise Exception(_('Package %s not found.') % name)
 
-        pkg_doc = ET.fromstring(self.pdb.get_item(name, repo))
+        pkg_doc = etree.fromstring(self.pdb.get_item(name, repo))
         return self.__get_version(pkg_doc) + self.__get_distro_release(pkg_doc)
 
     def get_version(self, name, repo):
         if not self.has_package(name, repo):
             raise Exception(_('Package %s not found.') % name)
 
-        pkg_doc = ET.fromstring(self.pdb.get_item(name, repo))
+        pkg_doc = etree.fromstring(self.pdb.get_item(name, repo))
         return self.__get_version(pkg_doc)
 
     def get_package_repo(self, name, repo=None):
@@ -171,11 +178,11 @@ class PackageDB(lazydb.LazyDB):
         packages = set()
         for repo in repodb.list_repos():
             doc = repodb.get_repo_doc(repo)
-            for package in doc.tags("Package"):
-                if package.getTagData("IsA"):
-                    for node in package.tags("IsA"):
-                        if node.firstChild().data() == isa:
-                            packages.add(package.getTagData("Name"))
+            for package in doc.findall("Package"):
+                if package.find("IsA") is not None:
+                    for node in package.findall("IsA"):
+                        if node.text == isa:
+                            packages.add(package.find("Name").text)
         return list(packages)
 
     def get_rev_deps(self, name, repo=None):
@@ -186,7 +193,7 @@ class PackageDB(lazydb.LazyDB):
 
         rev_deps = []
         for pkg, dep in rvdb:
-            node = ET.fromstring(dep)
+            node = etree.fromstring(dep)
             dependency = pisi.dependency.Dependency()
             dependency.package = node.text
             if node.attrib:
@@ -201,12 +208,11 @@ class PackageDB(lazydb.LazyDB):
 
         for pkg_name in self.rpdb.get_list_item():
             xml = self.pdb.get_item(pkg_name, repo)
-            package = ET.fromstring(xml)
+            package = etree.fromstring(xml)
             replaces_tag = package.find("Replaces")
             if replaces_tag:
                 for node in replaces_tag.findall("Package"):
                     r = pisi.relation.Relation()
-                    # XXX Is there a better way to do this?
                     r.decode(node, [])
                     if pisi.replace.installed_package_replaced(r):
                         pairs.setdefault(r.package, []).append(pkg_name)

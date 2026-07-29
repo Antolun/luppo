@@ -593,7 +593,7 @@ class autoxml(oo.autosuper, oo.autoprop):
 
         def decode(node, errs, where):
             node = xmlext.getNode(node, tag)
-            if node:
+            if node is not None:
                 try:
                     obj = make_object()
                     obj.decode(node, errs, where)
@@ -705,7 +705,7 @@ class autoxml(oo.autosuper, oo.autoprop):
             return make_object()
 
         def decode(node, errs, where):
-            if node:
+            if node is not None:
                 try:
                     obj = make_object()
                     obj.decode(node, errs, where)

@@ -14,7 +14,7 @@ import gettext
 __trans = gettext.translation('pisi', fallback=True)
 _ = __trans.gettext
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 import pisi
 import pisi.file
@@ -30,7 +30,7 @@ class XmlFile(object):
 
     def newDocument(self):
         """clear DOM"""
-        self.doc = ET.Element(self.rootTag)
+        self.doc = etree.Element(self.rootTag)
 
     def unlink(self):
         """deallocate DOM structure"""
@@ -45,7 +45,7 @@ class XmlFile(object):
         if isinstance(xml, bytes):
             xml = xml.decode("utf-8")
         try:
-            self.doc = ET.fromstring(xml)
+            self.doc = etree.fromstring(xml)
             return self.doc
         except Exception as e:
             raise Error(_("String '%s' has invalid XML") % (xml))
@@ -68,7 +68,7 @@ class XmlFile(object):
                                                 compress=compress,sign=sign, copylocal=copylocal)
 
         try:
-            self.doc = ET.parse(localpath).getroot()
+            self.doc = etree.parse(localpath).getroot()
             return self.doc
         except OSError as e:
             raise Error(_("Unable to read file (%s): %s") %(localpath,e))
@@ -77,7 +77,7 @@ class XmlFile(object):
 
     def writexml(self, uri, tmpDir = '/tmp', sha1sum=False, compress=None, sign=None):
         f = pisi.file.File(uri, pisi.file.File.write, sha1sum=sha1sum, compress=compress, sign=sign)
-        f.write(ET.tostring(self.doc, encoding="utf-8"))
+        f.write(etree.tostring(self.doc, pretty_print=True).decode('utf-8'))
         f.close()
 
     def writexmlfile(self, f):

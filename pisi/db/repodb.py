@@ -16,7 +16,7 @@ _ = __trans.gettext
 
 import os
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 import pisi
 import pisi.uri
@@ -47,7 +47,7 @@ class RepoOrder:
         repo_doc = self._get_doc()
 
         try:
-            node = [x for x in repo_doc.tags("Repo")][-1]
+            node = [x for x in repo_doc.findall("Repo")][-1]
             repo_node = node.appendTag("Repo")
         except IndexError:
             repo_node = repo_doc.insertTag("Repo")
@@ -75,8 +75,8 @@ class RepoOrder:
                 if status_node:
                     status_node.text = status
                 else:
-                    status_node = ET.SubElement(r, "Status")
-                    status_node.text = status
+                    status_node = r.insertTag("Status")
+                    status_node.insertData(status)
 
         self._update(repo_doc)
 
@@ -85,7 +85,7 @@ class RepoOrder:
         for r in repo_doc.findall("Repo"):
             if r.find("Name").text == repo_name:
                 status_node = r.find("Status")
-                if status_node:
+                if status_node is not None:
                     status = status_node.text
                     if status in ["active", "inactive"]:
                         return status
@@ -96,7 +96,7 @@ class RepoOrder:
 
         for r in repo_doc.findall("Repo"):
             if r.find("Name").text == repo_name:
-                repo_doc.remove(r)
+                r.hide()
 
         self._update(repo_doc)
 
@@ -113,7 +113,7 @@ class RepoOrder:
     def _update(self, doc):
         repos_file = os.path.join(ctx.config.info_dir(), ctx.const.repos)
         with open(repos_file, "w") as f:
-            f.write("%s\n" % ET.tostring(doc, encoding="utf-8"))
+            f.write("%s\n" % etree.tostring(doc, pretty_print=True).decode())
         self._doc = None
         self.repos = self._get_repos()
 
@@ -121,9 +121,9 @@ class RepoOrder:
         if self._doc is None:
             repos_file = os.path.join(ctx.config.info_dir(), ctx.const.repos)
             if os.path.exists(repos_file):
-                self._doc = ET.parse(repos_file).getroot()
+                self._doc = etree.parse(repos_file).getroot()
             else:
-                self._doc = ET.Element("REPOS")
+                self._doc = etree.Element("REPOS")
 
         return self._doc
 
@@ -166,10 +166,10 @@ class RepoDB(lazydb.LazyDB):
 
         if not os.path.exists(index_path):
             ctx.ui.warning(_("%s repository needs to be updated") % repo_name)
-            return ET.Element("PISI")
+            return etree.Element("PISI")
 
         try:
-            return ET.parse(index_path).getroot()
+            return etree.parse(index_path).getroot()
         except Exception as e:
             raise RepoError(_("Error parsing repository index information. Index file does not exist or is malformed."))
 
