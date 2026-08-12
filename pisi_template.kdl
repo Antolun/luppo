@@ -1,0 +1,103 @@
+PisiPackage {
+    Source {
+        Name "ornek-paket"
+        Homepage "https://www.ornek.com"
+        Packager {
+            Name "Pisi Topluluğu"
+            Email "admin@pisilinux.org"
+        }
+        License "GPL-2.0-or-later"
+        Summary "Paketin çok kısa bir özeti"
+        Description "Paketin ne işe yaradığını, kimler tarafından kullanılacağını anlatan çok detaylı bir açıklama metni."
+        PartOf "system.base"
+        Icon "icon"
+        Provides {
+            Isa "app:console"
+            Isa "app:gui"
+        }
+            Archive sha1sum="a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0" {
+                "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0"
+            }
+        BuildDependencies {
+        Dependency "cmake"
+        Dependency "gcc" version-from=">=9.3.0"
+        Dependency "pkgconfig" release="current"
+        }
+        Patches {
+            Patch "01-fix-build.patch" level=1
+            Patch "02-security-fix.patch" level=1 compression-type="xz"
+        }
+    }
+    Package {
+        Name "ornek-paket"
+        Summary "Ana paket özeti"
+        Description "Ana paket detayı"
+        License "GPL-2.0-or-later"
+        PartOf "system.base"
+        BuildType "cmake"
+        RuntimeDependencies {
+        Dependency "glibc" version-from=">=2.30"
+        Dependency "zlib"
+            AnyDependency {
+        Dependency "mariadb-client"
+        Dependency "postgresql-client"
+            }
+        }
+        Files {
+                Path "/usr/bin/ornek" file-type="executable"
+                Path "/etc/ornek.conf" file-type="config"
+                Path "/usr/share/doc/ornek/*" file-type="doc"
+            }
+        Actions {
+                steps "setup;build;install"
+                pre-install "pre-install-script.sh"
+                post-install "post-install-script.sh"
+                pre-upgrade "pre-upgrade-script.sh"
+                post-upgrade "post-upgrade-script.sh"
+                post-remove "post-remove-script.sh"
+            }
+        Provides {
+                Isa "app:console"
+                Comar provide="System.Service" script="service.py" name="ornekd"
+                Comar provide="System.Package" script="package.py"
+            }
+        Replaces {
+            Package "eski-ornek-paket"
+            Package "baska-ornek-paket-legacy"
+        }
+        Conflicts {
+            Package "cakisan-ornek-paket"
+        }
+        AdditionalFiles {
+            AdditionalFile "ornek.conf" target="/etc/ornek.conf" owner="root" permission="0644"
+            AdditionalFile "ornek.service" target="/usr/lib/systemd/system/ornek.service" owner="root" permission="0644"
+        }
+    }
+    Package {
+        Name "ornek-paket-devel"
+        Summary "Geliştirme dosyaları"
+        Description "Uygulama geliştiricileri için header ve kütüphane dosyaları."
+        PartOf "system.devel"
+        RuntimeDependencies {
+        Dependency "ornek-paket"
+        }
+        Files {
+                Path "/usr/include/ornek/*" file-type="header"
+                Path "/usr/lib/libornek.so" file-type="library"
+            }
+    }
+    History {
+        Update release=2 date="2026-05-18" {
+            Version "1.0.1"
+            Comment "Güvenlik yamaları uygulandı ve gereksiz bağımlılıklar kaldırıldı."
+            Name "Pisi Topluluğu"
+            Email "admin@pisilinux.org"
+        }
+        Update release=1 date="2026-05-17" {
+            Version "1.0.0"
+            Comment "PisiLinux için ilk sürüm."
+            Name "Pisi Topluluğu"
+            Email "admin@pisilinux.org"
+        }
+    }
+}

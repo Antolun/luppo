@@ -1,0 +1,1732 @@
+use md5;
+use rust_i18n::t;
+use sha1::{Digest, Sha1};
+use sha2::Sha256;
+use std::env;
+use std::fs::{self, OpenOptions};
+use std::io::{self, BufRead, BufReader, Read, Write};
+use std::path::Path;
+use std::process::{Command, Stdio};
+use std::sync::{Arc, Mutex};
+use std::thread;
+rust_i18n::i18n!("../../locales", fallback = "tr");
+
+// --- YARDIMCI FONKSİYON ---
+/// Belirtilen komutu çalıştırır ve çıktıyı yakalar.
+/// Başarılı olursa Ok(()), başarısız olursa anlamlı bir hata mesajı döndürür.
+pub fn run_command(name: &str, args: &[&str]) -> Result<(), String> {
+    // Log dosyası yolunu çevre değişkeninden al
+    let log_file_path = env::var("PISI_BUILD_LOG").ok();
+    let full_command = if args.is_empty() {
+        name.to_string()
+    } else {
+        format!("{} {}", name, args.join(" "))
+    };
+
+    // Log dosyası varsa aç ve Arc/Mutex ile sarmala (paralel erişim için)
+    let log_file = log_file_path
+        .and_then(|path| OpenOptions::new().create(true).append(true).open(path).ok())
+        .map(|f| Arc::new(Mutex::new(f)));
+
+    if let Some(ref f) = log_file {
+        let mut f = f.lock().unwrap();
+        writeln!(f, "\n[RUN]: {}", full_command).ok();
+    }
+
+    println!("DEBUG RUN_COMMAND: name={}, cwd={:?}, PATH={:?}", name, std::env::current_dir(), std::env::var("PATH"));
+    let mut child = Command::new("sh")
+        .arg("-c")
+        .arg(&full_command)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| t!("api_err_spawn", name = name, error = e).to_string())?;
+
+    let stdout_pipe = child.stdout.take().ok_or("Stdout pipe alınamadı")?;
+    let stderr_pipe = child.stderr.take().ok_or("Stderr pipe alınamadı")?;
+
+    let is_verbose = env::var("VERBOSE").is_ok() || env::var("PISI_DEBUG").is_ok();
+    let log_file_stdout = log_file.clone();
+    let log_file_stderr = log_file.clone();
+
+    // Çıktıyı canlı olarak okumak için thread'ler kullanıyoruz
+    let stdout_thread = thread::spawn(move || {
+        let reader = BufReader::new(stdout_pipe);
+        let mut output = String::new();
+        for l in reader.lines().map_while(Result::ok) {
+            if is_verbose {
+                println!("{}", l);
+            }
+            if let Some(ref f) = log_file_stdout {
+                let mut f = f.lock().unwrap();
+                writeln!(f, "{}", l).ok();
+            }
+            output.push_str(&l);
+            output.push('\n');
+        }
+        output
+    });
+
+    let stderr_thread = thread::spawn(move || {
+        let reader = BufReader::new(stderr_pipe);
+        let mut output = String::new();
+        for l in reader.lines().map_while(Result::ok) {
+            if is_verbose {
+                eprintln!("{}", l);
+            }
+            if let Some(ref f) = log_file_stderr {
+                let mut f = f.lock().unwrap();
+                writeln!(f, "{}", l).ok();
+            }
+            output.push_str(&l);
+            output.push('\n');
+        }
+        output
+    });
+
+    let stdout_str = stdout_thread.join().unwrap_or_default();
+    let stderr_str = stderr_thread.join().unwrap_or_default();
+
+    let status = child.wait().map_err(|e| e.to_string())?;
+    if !status.success() {
+        let error_msg = if !stderr_str.is_empty() {
+            stderr_str.to_string()
+        } else {
+            stdout_str.to_string()
+        };
+        return Err(format!(
+            "Command '{}' failed (Exit Code: {}). Error: {}",
+            full_command,
+            status.code().unwrap_or(-1),
+            error_msg.trim()
+        ));
+    }
+
+    Ok(())
+}
+
+/// Mevcut çalışma dizinini değiştirir (shelltools.cd muadili).
+pub fn cd<P: AsRef<Path>>(path: P) -> Result<(), String> {
+    let p = path.as_ref();
+    println!("{}", t!("api_cd", path = p.display()));
+    env::set_current_dir(p).map_err(|e| t!("api_err_cd", path = p.display(), error = e).to_string())
+}
+
+/// COMAR betikleri için gerekli sistem çevre değişkenlerini hazırlar.
+pub fn setup_comar_env(pkg_name: &str, dest_root: &str) {
+    set_env("PISI_PACKAGE_NAME", pkg_name);
+    set_env("PISI_DESTDIR", dest_root);
+    // Betiklerin sistem Python kütüphanelerine erişimi için
+    if let Ok(path) = env::var("PYTHONPATH") {
+        set_env(
+            "PYTHONPATH",
+            &format!("{}:/usr/lib/python3/site-packages", path),
+        );
+    } else {
+        set_env("PYTHONPATH", "/usr/lib/python3/site-packages");
+    }
+}
+
+/// Bir çevre değişkenini ayarlar (variable.py ve Flags muadili).
+pub fn set_env(key: &str, value: &str) {
+    println!("{}", t!("api_set_env", key = key, value = value));
+    unsafe { env::set_var(key, value); }
+}
+
+/// İnşa süreci için kritik olan 'make' ve 'patch' komutlarının sistemde olup olmadığını denetler.
+pub fn check_required_tools() -> Result<(), String> {
+    for tool in &["make", "patch"] {
+        if Command::new(tool).arg("--version").output().is_err() {
+            return Err(t!("api_err_tool_not_found", tool = tool).to_string());
+        }
+    }
+    println!("{}", t!("api_tools_verified"));
+    Ok(())
+}
+
+/// İndirilen kaynak arşivin doğruluğunu kontrol eder.
+pub fn verify_archive(
+    archive_path: &str,
+    expected_hash: &str,
+    algorithm: &str,
+) -> Result<(), String> {
+    println!(
+        "{}",
+        t!("api_verify_archive", algo = algorithm, path = archive_path)
+    );
+
+    let mut file = fs::File::open(archive_path)
+        .map_err(|e| t!("api_err_archive_open", error = e).to_string())?;
+
+    let calculated_hash = match algorithm.to_lowercase().as_str() {
+        "sha1" => {
+            let mut hasher = Sha1::new();
+            io::copy(&mut file, &mut hasher).map_err(|e| e.to_string())?;
+            format!("{:x}", hasher.finalize())
+        }
+        "sha256" => {
+            let mut hasher = Sha256::new();
+            io::copy(&mut file, &mut hasher).map_err(|e| e.to_string())?;
+            format!("{:x}", hasher.finalize())
+        }
+        "md5" => {
+            let mut content = Vec::new();
+            file.read_to_end(&mut content).map_err(|e| e.to_string())?;
+            format!("{:x}", md5::compute(&content))
+        }
+        _ => return Err(t!("api_err_hash_algo", algo = algorithm).to_string()),
+    };
+
+    if calculated_hash == expected_hash {
+        println!("{}", t!("api_archive_success"));
+        Ok(())
+    } else {
+        Err(t!(
+            "api_err_hash_mismatch",
+            path = archive_path,
+            expected = expected_hash,
+            calculated = calculated_hash
+        )
+        .to_string())
+    }
+}
+
+/// Verilen arşiv dosyasını (tar.gz, tar.xz, zip) mevcut dizine açar.
+pub fn unpack_archive(archive_path: &str) -> Result<(), String> {
+    println!("{}", t!("api_unpack", path = archive_path));
+
+    let ext = Path::new(archive_path)
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("");
+
+    match ext {
+        "gz" | "tgz" => run_command("tar", &["-xvf", archive_path]),
+        "xz" => run_command("tar", &["-xJvf", archive_path]),
+        "zip" => run_command("unzip", &[archive_path]),
+        _ => run_command("tar", &["-xvf", archive_path]), // Default tar denemesi
+    }
+}
+
+/// Kaynak dosya içindeki bir yamayı (patch) uygular.
+pub fn do_patch(patch_file: &str, strip_level: u8) -> Result<(), String> {
+    let strip = format!("-p{}", strip_level);
+    run_command("patch", &["-i", patch_file, &strip])?;
+    Ok(())
+}
+
+/// Ham bir kabuk komutunu (shell command) sandbox içinde çalıştırır.
+/// Spec dosyasındaki 'steps' içeriğini yürütmek için kullanılır.
+pub fn run_shell(command: &str) -> Result<(), String> {
+    run_command("sh", &["-c", command])
+}
+
+/// Kaynak dosyadan hedef dizine dosya veya dizin kopyalar/taşır.
+/// Orijinal Pisi'deki pisitools.install() fonksiyonunun muadilidir.
+pub fn install<P: AsRef<Path>, D: AsRef<Path>>(source: P, destination: D) -> Result<(), String> {
+    let source = source.as_ref();
+    let destination = destination.as_ref();
+
+    println!(
+        "{}",
+        t!(
+            "api_install",
+            src = source.display(),
+            dest = destination.display()
+        )
+    );
+    if let Some(parent) = destination.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+
+    if source.is_dir() {
+        // Dizin ve içeriğini öznitelikleri koruyarak kopyalamak için sistem cp komutunu kullanıyoruz.
+        run_command(
+            "cp",
+            &[
+                "-pPR",
+                source.to_str().unwrap(),
+                destination.to_str().unwrap(),
+            ],
+        )?;
+    } else {
+        // Eğer hedef bir dizinse, dosya adını koru
+        let final_dest = if destination.is_dir() {
+            destination.join(source.file_name().ok_or("Geçersiz kaynak dosya")?)
+        } else {
+            destination.to_path_buf()
+        };
+
+        if let Some(parent) = final_dest.parent() {
+            fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+        fs::copy(source, &final_dest)
+            .map_err(|e| t!("api_err_copy", src = source.display(), error = e).to_string())?;
+    }
+
+    Ok(())
+}
+
+/// Autotools tabanlı derleme sistemleri için temel configure çağrısını yapar.
+pub fn autotools_configure(args: &[&str]) -> Result<(), String> {
+    let sbindir_val = std::env::var("PISI_SBINDIR").unwrap_or_else(|_| "usr/bin".to_string());
+    let mut default_args = vec!["--prefix=/usr".to_string(), "--sysconfdir=/etc".to_string()];
+
+    // Kullanıcı --sbindir belirtmemişse varsayılanı ekle
+    let has_sbindir = args.iter().any(|a| a.starts_with("--sbindir"));
+    if !has_sbindir {
+        default_args.push(format!("--sbindir=/{}", sbindir_val.trim_start_matches('/')));
+    }
+
+    // systemd kontrolü: Kullanıcı --with-systemdsystemunitdir belirtmemişse, systemd olmadığı için =no ekle
+    let has_systemd = args.iter().any(|a| a.starts_with("--with-systemdsystemunitdir"));
+    if !has_systemd {
+        default_args.push("--with-systemdsystemunitdir=no".to_string());
+    }
+
+    // libexecdir kontrolü: Kullanıcı --libexecdir belirtmemişse, --libexecdir=/usr/lib/paket_adı ekle
+    let has_libexecdir = args.iter().any(|a| a.starts_with("--libexecdir"));
+    if !has_libexecdir {
+        if let Ok(pkg_name) = std::env::var("SRC_NAME") {
+            default_args.push(format!("--libexecdir=/usr/lib/{}", pkg_name));
+        }
+    }
+
+    // Çapraz derleme kontrolü
+    if let Ok(chost) = env::var("CHOST") {
+        if !args.iter().any(|arg| arg.starts_with("--host=")) {
+            default_args.push(format!("--host={}", chost));
+        }
+    }
+
+    for arg in args {
+        default_args.push(arg.to_string());
+    }
+
+    let default_args_refs: Vec<&str> = default_args.iter().map(|s| s.as_str()).collect();
+
+    println!(
+        "{}",
+        t!("api_run_config", args = default_args_refs.join(" "))
+    );
+
+    // run_command ile configure script'ini çalıştır
+    run_command("./configure", &default_args_refs)
+}
+
+/// Autotools 'libtoolize' adımını uygular.
+pub fn libtoolize(args: &[&str]) -> Result<(), String> {
+    let mut default_args = vec!["--copy", "--force"];
+    default_args.extend_from_slice(args);
+    println!("Running libtoolize {}", default_args.join(" "));
+    run_command("libtoolize", &default_args)
+}
+
+// YENİ FONKSİYONLAR
+/// Autotools 'make' (derleme) adımını uygular.
+pub fn autotools_make(args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["-j", jobs.as_str()];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_make", args = default_args.join(" ")));
+
+    run_command("make", &default_args)
+}
+
+/// CMake tabanlı derleme sistemleri için yapılandırma adımını uygular.
+pub fn cmake_configure(args: &[&str]) -> Result<(), String> {
+    let sbindir_val = std::env::var("PISI_SBINDIR").unwrap_or_else(|_| "bin".to_string());
+    let mut default_args = vec![
+        "-DCMAKE_INSTALL_PREFIX=/usr".to_string(),
+        "-DCMAKE_BUILD_TYPE=Release".to_string(),
+        "-DCMAKE_INSTALL_LIBDIR=lib".to_string(),
+        "-DLIB_SUFFIX=".to_string(),
+        "-DCMAKE_VERBOSE_MAKEFILE=ON".to_string(),
+    ];
+
+    // Kullanıcı CMAKE_INSTALL_SBINDIR belirtmemişse varsayılanı ekle
+    let has_sbindir = args.iter().any(|a| a.contains("CMAKE_INSTALL_SBINDIR"));
+    if !has_sbindir {
+        default_args.push(format!("-DCMAKE_INSTALL_SBINDIR={}", sbindir_val));
+    }
+
+    // libexecdir kontrolü: Kullanıcı CMAKE_INSTALL_LIBEXECDIR belirtmemişse, -DCMAKE_INSTALL_LIBEXECDIR=lib/paket_adı ekle
+    let has_libexecdir = args.iter().any(|a| a.contains("CMAKE_INSTALL_LIBEXECDIR"));
+    if !has_libexecdir {
+        if let Ok(pkg_name) = std::env::var("SRC_NAME") {
+            default_args.push(format!("-DCMAKE_INSTALL_LIBEXECDIR=lib/{}", pkg_name));
+        }
+    }
+
+    // Çapraz derleme kontrolü
+    if let Ok(chost) = env::var("CHOST") {
+        let target_arch = if chost.starts_with("aarch64") {
+            "aarch64"
+        } else if chost.starts_with("x86_64") {
+            "x86_64"
+        } else {
+            "generic"
+        };
+
+        default_args.push("-DCMAKE_SYSTEM_NAME=Linux".to_string());
+        default_args.push(format!("-DCMAKE_SYSTEM_PROCESSOR={}", target_arch));
+
+        if let Ok(cc) = env::var("CC") {
+            default_args.push(format!("-DCMAKE_C_COMPILER={}", cc));
+        }
+        if let Ok(cxx) = env::var("CXX") {
+            default_args.push(format!("-DCMAKE_CXX_COMPILER={}", cxx));
+        }
+    }
+
+    for arg in args {
+        default_args.push(arg.to_string());
+    }
+
+    // cmake .. (hedef dizin olarak son argüman eklenir)
+    if !args.iter().any(|arg| arg.starts_with("..")) {
+        default_args.push("..".to_string());
+    }
+
+    // CMake genellikle ayrı bir build dizini bekler
+    if !Path::new("build").exists() {
+        fs::create_dir("build").map_err(|e| t!("api_err_build_dir", error = e).to_string())?;
+    }
+
+    // Build dizinine gir ve modern run_command mekanizmasıyla çalıştır
+    cd("build")?;
+    println!("{}", t!("api_run_cmake"));
+
+    let default_args_refs: Vec<&str> = default_args.iter().map(|s| s.as_str()).collect();
+    run_command("cmake", &default_args_refs)
+}
+
+/// Meson tabanlı derleme sistemleri için yapılandırma adımını uygular.
+pub fn meson_configure(args: &[&str]) -> Result<(), String> {
+    let mut default_args = vec![
+        "setup".to_string(),
+        "builddir".to_string(),
+        "--prefix=/usr".to_string(),
+        "--sysconfdir=/etc".to_string(),
+        "--buildtype=plain".to_string(),
+        "--libdir=lib".to_string(),
+    ];
+
+    // Kullanıcı --sbindir belirtmemişse varsayılanı ekle
+    let has_sbindir = args.iter().any(|a| a.starts_with("--sbindir"));
+    if !has_sbindir {
+        let sbindir_val = std::env::var("PISI_SBINDIR").unwrap_or_else(|_| "bin".to_string());
+        default_args.push(format!("--sbindir={}", sbindir_val));
+    }
+
+    // libexecdir kontrolü: Kullanıcı --libexecdir belirtmemişse, --libexecdir=lib/paket_adı ekle (Meson'da libdir=lib olduğu için prefix'e göre görece yoldur)
+    let has_libexecdir = args.iter().any(|a| a.starts_with("--libexecdir"));
+    if !has_libexecdir {
+        if let Ok(pkg_name) = std::env::var("SRC_NAME") {
+            default_args.push(format!("--libexecdir=lib/{}", pkg_name));
+        }
+    }
+
+    for arg in args {
+        default_args.push(arg.to_string());
+    }
+
+    let refs: Vec<&str> = default_args.iter().map(|s| s.as_str()).collect();
+    println!("{}", t!("api_run_meson", args = refs.join(" ")));
+
+    run_command("meson", &refs)
+}
+
+/// Ninja derleme sistemini kullanarak projeyi derler.
+pub fn ninja_build(args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["-C", "builddir", "-j", jobs.as_str()];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_ninja", args = default_args.join(" ")));
+
+    run_command("ninja", &default_args)
+}
+
+/// Ninja derleme sistemini kullanarak projeyi kurar.
+pub fn ninja_install(dest_dir: &str, args: &[&str]) -> Result<(), String> {
+    unsafe { env::set_var("DESTDIR", dest_dir); }
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["-C", "builddir", "-j", jobs.as_str(), "install"];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_ninja_install", dest = dest_dir));
+
+    let res = run_command("ninja", &default_args);
+
+    // Çevre değişkenini temizle
+    unsafe { env::remove_var("DESTDIR"); }
+
+    res
+}
+
+/// Autotools 'make install' (kurulum) adımını uygular.
+pub fn autotools_install(dest_dir: &str, args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let destdir_arg = format!("DESTDIR={}", dest_dir);
+    let mut default_args = vec!["-j", jobs.as_str(), "install", destdir_arg.as_str()];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_make_install", dest = dest_dir));
+
+    // make komutunu 'install' argümanı ve DESTDIR ile çalıştır
+    run_command("make", &default_args)
+}
+
+/// Autotools 'make install' ham kurulum adımı. DESTDIR otomatik eklenmez,
+/// argümanlar doğrudan kullanıcıdan gelir (rawInstall muadili).
+pub fn raw_install(args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["-j", jobs.as_str(), "install"];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_make", args = default_args.join(" ")));
+
+    run_command("make", &default_args)
+}
+
+/// Derleme bayraklarını çevre değişkenlerine aktarır
+pub fn export_flags() {
+    set_env("CFLAGS", &get::cflags());
+    set_env("CXXFLAGS", &get::cxxflags());
+    set_env("LDFLAGS", &get::ldflags());
+}
+
+// --- PISITOOLS ÖZGÜ FONKSİYONLAR ---
+
+/// Bin dosyalarını /usr/bin dizinine kurar.
+pub fn dobin<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/bin");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    install(source, path)
+}
+
+/// Sistem bin dosyalarını /usr/bin dizinine kurar (usrmerge).
+/// /usr/sbin gerektiren programlar için /usr/sbin'de sembolik bağ oluşturur.
+pub fn dosbin<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let sbindir = std::env::var("PISI_SBINDIR").unwrap_or_else(|_| "usr/bin".to_string());
+    let target_dir = Path::new(dest_root).join(&sbindir);
+    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    // Kaynak dosya adını al (install çağrısından önce, move sorununu önlemek için)
+    let filename = source
+        .as_ref()
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string());
+
+    install(source, &target_dir)?;
+
+    // sbindir usr/bin değilse (ör. usr/sbin), sembolik bağ gerekmez
+    if sbindir == "usr/sbin" {
+        return Ok(());
+    }
+
+    // /usr/sbin gerektiren programlar için sembolik bağlantı oluştur:
+    // install_root/usr/sbin/program -> ../bin/program
+    let sbin_link_dir = Path::new(dest_root).join("usr/sbin");
+    if let Some(parent) = sbin_link_dir.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+
+    if let Some(ref fname) = filename {
+        let link_path = sbin_link_dir.join(fname);
+        if !link_path.exists() {
+            #[cfg(unix)]
+            std::os::unix::fs::symlink(
+                format!("../bin/{}", fname),
+                &link_path,
+            )
+            .map_err(|e| {
+                t!(
+                    "api_symlink_err",
+                    error = format!("{} -> usr/sbin: {}", fname, e)
+                )
+                .to_string()
+            })?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Kütüphaneleri /usr/lib dizinine kurar.
+pub fn dolib<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/lib");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    install(source, path)
+}
+
+/// Manual sayfalarını /usr/share/man dizinine kurar.
+pub fn doman<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/share/man");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    install(source, path)
+}
+
+/// Info sayfalarını /usr/share/info dizinine kurar.
+pub fn doinfo<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/share/info");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    install(source, path)
+}
+
+/// Dokümantasyon dosyalarını /usr/share/doc/<paket_adi> dizinine kurar.
+pub fn dodoc<P: AsRef<Path>>(dest_root: &str, pkg_name: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/share/doc").join(pkg_name);
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    install(source, path)
+}
+
+/// C/C++ başlık dosyalarını /usr/include dizinine kurar.
+pub fn install_headers<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/include");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+
+    let src_str = source.as_ref().to_string_lossy();
+    if src_str.contains('*') || src_str.contains('?') {
+        if let Ok(entries) = glob::glob(&src_str) {
+            for entry in entries.flatten() {
+                install(&entry, &path)?;
+            }
+        }
+        Ok(())
+    } else {
+        install(source, path)
+    }
+}
+
+/// Bir dosya içindeki metni arar ve değiştirir (sed -i alternatifi).
+pub fn dosed<P: AsRef<Path>>(
+    path: P,
+    search: &str,
+    replace: &str,
+    delete_line: bool,
+) -> Result<(), String> {
+    let p = path.as_ref();
+    println!(
+        "-> dosed: {} ({} -> {})",
+        p.display(),
+        search,
+        if delete_line { "DELETE" } else { replace }
+    );
+
+    let content = fs::read_to_string(p)
+        .map_err(|e| t!("api_err_dosed_open", path = p.display(), error = e).to_string())?;
+
+    let re = regex::Regex::new(search).map_err(|e| t!("api_err_regex", error = e).to_string())?;
+
+    let mut new_lines = Vec::new();
+    for line in content.lines() {
+        if re.is_match(line) {
+            if !delete_line {
+                new_lines.push(re.replace_all(line, replace).to_string());
+            }
+        } else {
+            new_lines.push(line.to_string());
+        }
+    }
+
+    fs::write(p, new_lines.join("\n") + "\n")
+        .map_err(|e| t!("api_err_dosed_write", path = p.display(), error = e).to_string())
+}
+// ----------------------------
+
+/// Qt5 projeleri için yapılandırma (qmake-qt5) adımını uygular.
+pub fn qt5_configure(args: &[&str]) -> Result<(), String> {
+    let mut default_args = vec![
+        "PREFIX=/usr",
+        "LIBDIR=/usr/lib",
+        "QMAKE_CFLAGS+='-O2'",
+        "QMAKE_CXXFLAGS+='-O2'",
+    ];
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!(
+            "api_run_config",
+            args = format!("qmake-qt5 {}", default_args.join(" "))
+        )
+    );
+    run_command("qmake-qt5", &default_args)
+}
+
+/// Qt6 projeleri için yapılandırma (qmake6) adımını uygular.
+pub fn qt6_configure(args: &[&str]) -> Result<(), String> {
+    let mut default_args = vec!["PREFIX=/usr", "LIBDIR=/usr/lib"];
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!(
+            "api_run_config",
+            args = format!("qmake6 {}", default_args.join(" "))
+        )
+    );
+    run_command("qmake6", &default_args)
+}
+
+/// KDE Frameworks 5 tabanlı projeler için özelleştirilmiş CMake yapılandırması.
+pub fn kde5_configure(args: &[&str]) -> Result<(), String> {
+    let mut kde_args = vec![
+        "-DKDE_INSTALL_USE_QT_SYS_PATHS=ON",
+        "-DKDE_INSTALL_LIBDIR=lib",
+        "-DBUILD_TESTING=OFF",
+    ];
+    kde_args.extend_from_slice(args);
+    cmake_configure(&kde_args)
+}
+
+/// KDE Frameworks 6 tabanlı projeler için özelleştirilmiş CMake yapılandırması.
+pub fn kde6_configure(args: &[&str]) -> Result<(), String> {
+    let mut kde_args = vec![
+        "-DKDE_INSTALL_USE_QT_SYS_PATHS=ON",
+        "-DKDE_INSTALL_LIBDIR=lib",
+        "-DBUILD_QT6=ON",
+        "-DBUILD_TESTING=OFF",
+    ];
+    kde_args.extend_from_slice(args);
+    cmake_configure(&kde_args)
+}
+
+/// Python 3 modülleri için inşa adımını (setup.py build) uygular.
+pub fn python3_setup_build(args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["setup.py", "build", "-j", jobs.as_str()];
+    default_args.extend_from_slice(args);
+    println!("{}", t!("api_python_build"));
+    run_command("python3", &default_args)
+}
+
+/// Python 3 modülleri için kurulum adımını (setup.py install) uygular.
+pub fn python3_setup_install(dest_dir: &str, args: &[&str]) -> Result<(), String> {
+    let root_arg = format!("--root={}", dest_dir);
+    let mut default_args = vec![
+        "setup.py",
+        "install",
+        root_arg.as_str(),
+        "--prefix=/usr",
+        "--optimize=1",
+        "--skip-build",
+    ];
+    default_args.extend_from_slice(args);
+    println!("{}", t!("api_python_install", dest = dest_dir));
+    run_command("python3", &default_args)
+}
+
+/// Perl modülleri (Makefile.PL) için yapılandırma adımını uygular.
+pub fn perl_makefile_configure(args: &[&str]) -> Result<(), String> {
+    let cflags = get::cflags();
+    let mut default_args = vec![
+        "Makefile.PL",
+        "PREFIX=/usr",
+        "INSTALLDIRS=vendor",
+        "MAN1DIR=/usr/share/man/man1",
+        "MAN3DIR=/usr/share/man/man3",
+    ];
+
+    // Sistem CFLAGS değerini optimizasyon bayrağı olarak ekle
+    let optimize_arg = format!("OPTIMIZE={}", cflags);
+    if !cflags.is_empty() {
+        default_args.push(&optimize_arg);
+    }
+
+    default_args.extend_from_slice(args);
+    println!("{}", t!("api_perl_config"));
+    run_command("perl", &default_args)
+}
+
+/// Perl modülleri için kurulum adımını uygular.
+pub fn perl_makefile_install(dest_dir: &str, args: &[&str]) -> Result<(), String> {
+    let destdir_arg = format!("DESTDIR={}", dest_dir);
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["-j", jobs.as_str(), "install", destdir_arg.as_str()];
+    default_args.extend_from_slice(args);
+    println!("{}", t!("api_perl_install"));
+    run_command("make", &default_args)
+}
+
+/// Perl modülleri için .packlist dosyalarını bulup siler.
+pub fn remove_packlist(dest_dir: &str) -> Result<(), String> {
+    let search_path = format!("{}/**/.packlist", dest_dir);
+    if let Ok(entries) = glob::glob(&search_path) {
+        for entry in entries.flatten() {
+            let _ = fs::remove_file(entry);
+        }
+    }
+    Ok(())
+}
+
+/// Perl modülleri için .pod dosyalarını bulup siler.
+pub fn remove_podfiles(dest_dir: &str) -> Result<(), String> {
+    let search_path = format!("{}/**/*.pod", dest_dir);
+    if let Ok(entries) = glob::glob(&search_path) {
+        for entry in entries.flatten() {
+            let _ = fs::remove_file(entry);
+        }
+    }
+    Ok(())
+}
+
+/// Linux Kernel modülleri için derleme adımını uygular.
+pub fn kernel_module_build(kernel_ver: &str, args: &[&str]) -> Result<(), String> {
+    let kdir = format!("/lib/modules/{}/build", kernel_ver);
+    let jobs = get::make_jobs();
+    let mut default_args = vec![
+        "-j",
+        jobs.as_str(),
+        "-C",
+        kdir.as_str(),
+        "M=$(pwd)",
+        "modules",
+    ];
+    default_args.extend_from_slice(args);
+    println!("{}", t!("api_kernel_build", version = kernel_ver));
+    run_command("make", &default_args)
+}
+
+/// Linux Kernel modülleri için kurulum adımını uygular.
+pub fn kernel_module_install(
+    kernel_ver: &str,
+    dest_dir: &str,
+    args: &[&str],
+) -> Result<(), String> {
+    let kdir = format!("/lib/modules/{}/build", kernel_ver);
+    let inst_dir = format!("{}/lib/modules/{}/extra", dest_dir, kernel_ver);
+    let destdir_arg = format!("INSTALL_MOD_PATH={}", dest_dir);
+    let jobs = get::make_jobs();
+
+    if !Path::new(&inst_dir).exists() {
+        fs::create_dir_all(&inst_dir)
+            .map_err(|e| t!("api_err_kernel_dir", error = e).to_string())?;
+    }
+
+    let mut default_args = vec![
+        "-j",
+        jobs.as_str(),
+        "-C",
+        kdir.as_str(),
+        "M=$(pwd)",
+        destdir_arg.as_str(),
+        "modules_install",
+    ];
+    default_args.extend_from_slice(args);
+    println!("{}", t!("api_kernel_install"));
+    run_command("make", &default_args)
+}
+
+/// Rust projeleri için inşa adımını (cargo build) uygular.
+pub fn cargo_build(args: &[&str]) -> Result<(), String> {
+    // Sandbox dostu CARGO_HOME: Mevcut çalışma dizini içinde .cargo klasörü.
+    // Bu, indirilen crate'lerin sandbox dışına sızmasını önler ve izolasyon sağlar.
+    let cargo_home = env::current_dir()
+        .map_err(|e| e.to_string())?
+        .join(".cargo");
+    if !cargo_home.exists() {
+        fs::create_dir_all(&cargo_home).map_err(|e| e.to_string())?;
+    }
+    set_env("CARGO_HOME", cargo_home.to_string_lossy().as_ref());
+
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["build", "--release", "--jobs", jobs.as_str()];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_cargo_build"));
+    run_command("cargo", &default_args)
+}
+
+/// Rust projeleri için kurulum adımını (cargo install) uygular.
+pub fn cargo_install(dest_dir: &str, args: &[&str]) -> Result<(), String> {
+    // İnşa aşamasındakiyle aynı CARGO_HOME kullanılmalı.
+    let cargo_home = env::current_dir()
+        .map_err(|e| e.to_string())?
+        .join(".cargo");
+    if !cargo_home.exists() {
+        fs::create_dir_all(&cargo_home).map_err(|e| e.to_string())?;
+    }
+    set_env("CARGO_HOME", cargo_home.to_string_lossy().as_ref());
+
+    // Pisi standartlarına göre /usr altına kurulum yapılması için root yolu ayarlanır.
+    // Cargo --root bayrağı, bin/ dizinini bu yolun hemen altına oluşturur.
+    let install_root = Path::new(dest_dir).join("usr");
+    let root_str = install_root.to_string_lossy();
+    let jobs = get::make_jobs();
+    let mut default_args = vec![
+        "install",
+        "--jobs",
+        jobs.as_str(),
+        "--path",
+        ".",
+        "--root",
+        &root_str,
+    ];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_cargo_install", dest = dest_dir));
+    run_command("cargo", &default_args)
+}
+
+/// Belirtilen hedef için bir sembolik bağ (symlink) oluşturur.
+pub fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, link_name: Q) -> Result<(), String> {
+    let src = source.as_ref();
+    let dst = link_name.as_ref();
+    println!(
+        "{}",
+        t!("api_symlink", src = src.display(), dest = dst.display())
+    );
+
+    #[cfg(unix)]
+    return std::os::unix::fs::symlink(src, dst)
+        .map_err(|e| t!("api_err_symlink", error = e).to_string());
+
+    #[cfg(not(unix))]
+    Err(t!("api_err_symlink_unix").to_string())
+}
+
+/// Dosya veya dizin izinlerini (chmod) ayarlar.
+pub fn set_perms<P: AsRef<Path>>(path: P, mode: u32) -> Result<(), String> {
+    let p = path.as_ref();
+    println!(
+        "{}",
+        t!(
+            "api_perms",
+            path = p.display(),
+            mode = format!("{:o}", mode)
+        )
+    );
+
+    let path_str = p.to_string_lossy();
+    if path_str.contains('*') || path_str.contains('?') {
+        let mut matched_any = false;
+        if let Ok(entries) = glob::glob(&path_str) {
+            for entry_path in entries.flatten() {
+                matched_any = true;
+                use std::os::unix::fs::PermissionsExt;
+                fs::set_permissions(&entry_path, fs::Permissions::from_mode(mode)).map_err(
+                    |e| t!("api_err_perms", path = entry_path.display(), error = e).to_string(),
+                )?;
+            }
+        }
+        if !matched_any {
+            return Err(t!(
+                "api_err_perms",
+                path = p.display(),
+                error = "No matching files found for glob"
+            )
+            .to_string());
+        }
+        Ok(())
+    } else {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(p, fs::Permissions::from_mode(mode))
+            .map_err(|e| t!("api_err_perms", path = p.display(), error = e).to_string())
+    }
+}
+
+/// Bir dosyayı veya dizini yeni bir konuma taşır veya adını değiştirir.
+pub fn move_path<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> Result<(), String> {
+    let src = source.as_ref();
+    let dst = destination.as_ref();
+    println!(
+        "{}",
+        t!("api_move", src = src.display(), dest = dst.display())
+    );
+
+    fs::rename(src, dst).map_err(|e| {
+        t!(
+            "api_err_move",
+            src = src.display(),
+            dest = dst.display(),
+            error = e
+        )
+        .to_string()
+    })
+}
+
+/// Bir dosyayı veya dizini (içeriğiyle birlikte) siler.
+pub fn remove_path<P: AsRef<Path>>(path: P) -> Result<(), String> {
+    let p = path.as_ref();
+    println!("{}", t!("api_remove", path = p.display()));
+
+    let path_str = p.to_string_lossy();
+    if path_str.contains('*') || path_str.contains('?') {
+        if let Ok(entries) = glob::glob(&path_str) {
+            for entry_path in entries.flatten() {
+                if entry_path.is_dir() {
+                    let _ = fs::remove_dir_all(&entry_path);
+                } else {
+                    let _ = fs::remove_file(&entry_path);
+                }
+            }
+        }
+        Ok(())
+    } else {
+        if !p.exists() && !p.is_symlink() {
+            return Ok(());
+        }
+
+        let result = if p.is_dir() {
+            fs::remove_dir_all(p)
+        } else {
+            fs::remove_file(p)
+        };
+
+        result.map_err(|e| t!("api_err_remove", path = p.display(), error = e).to_string())
+    }
+}
+
+/// Eski kaynak kodlardaki config.guess ve config.sub dosyalarını sistemdekilerle günceller.
+/// (libtools.gnuconfig_update muadili)
+pub fn gnuconfig_update() -> Result<(), String> {
+    println!("{}", t!("api_gnuconfig"));
+    let gnuconfig_dir = Path::new("/usr/share/gnuconfig");
+    if !gnuconfig_dir.exists() {
+        return Err(t!("api_err_gnuconfig_dir").to_string());
+    }
+
+    // Kaynak dizininde config.guess/sub olan yerleri bulup üzerine yazar
+    let files = ["config.guess", "config.sub"];
+    for entry in fs::read_dir(".").map_err(|e| e.to_string())?.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            continue;
+        }
+
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if files.contains(&name) {
+                let src = gnuconfig_dir.join(name);
+                fs::copy(src, &path).map_err(|e| e.to_string())?;
+                println!("{}", t!("api_gnuconfig_ok", path = path.display()));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Kurulum dizinindeki .pc dosyalarındaki yolları düzeltir.
+/// (pkgconfig.py ve autotools.fixpc muadili)
+pub fn fix_pkgconfig(dest_root: &str) -> Result<(), String> {
+    println!("{}", t!("api_fix_pc"));
+    let pc_dir = Path::new(dest_root).join("usr/lib/pkgconfig");
+    if !pc_dir.exists() {
+        return Ok(());
+    }
+
+    for entry in fs::read_dir(pc_dir).map_err(|e| e.to_string())?.flatten() {
+        if let Ok(file_type) = entry.file_type() {
+            if file_type.is_symlink() || !file_type.is_file() {
+                continue;
+            }
+        }
+        let path = entry.path();
+        if path.extension().is_some_and(|ext| ext == "pc") {
+            dosed(&path, dest_root, "", false)?; // install_root referanslarını temizle
+        }
+    }
+    Ok(())
+}
+
+/// SCons tabanlı derleme sistemini çalıştırır. (scons.py muadili)
+pub fn scons_build(args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let mut default_args = vec!["-j", jobs.as_str()];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_scons", args = default_args.join(" ")));
+    run_command("scons", &default_args)
+}
+
+/// SCons tabanlı kurulum adımını çalıştırır.
+pub fn scons_install(dest_dir: &str, args: &[&str]) -> Result<(), String> {
+    let jobs = get::make_jobs();
+    let destdir_arg = format!("DESTDIR={}", dest_dir);
+    let mut default_args = vec!["-j", jobs.as_str(), "install", &destdir_arg];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_run_scons_install", dest = dest_dir));
+    run_command("scons", &default_args)
+}
+
+/// Ruby Gem paketlerini yerel dizine kurar. (rubymodules.py muadili)
+pub fn ruby_gem_install(dest_dir: &str, gem_file: &str, args: &[&str]) -> Result<(), String> {
+    let install_dir = format!("{}/usr/lib/ruby/gems", dest_dir);
+    let bin_dir = format!("{}/usr/bin", dest_dir);
+    let mut default_args = vec![
+        "install",
+        "--local",
+        "--install-dir",
+        &install_dir,
+        "--bindir",
+        &bin_dir,
+        "--no-document",
+        gem_file,
+    ];
+    default_args.extend_from_slice(args);
+
+    println!("{}", t!("api_ruby_gem", gem = gem_file));
+    run_command("gem", &default_args)
+}
+
+/// Temel yol bilgilerini döndürür (get.py muadili — TAM KAPSAMLI)
+pub mod get {
+    use std::env;
+    use std::path::Path;
+
+    pub fn arch() -> String {
+        std::env::consts::ARCH.to_string()
+    }
+    pub fn cflags() -> String {
+        env::var("CFLAGS").unwrap_or_default()
+    }
+    pub fn cxxflags() -> String {
+        env::var("CXXFLAGS").unwrap_or_default()
+    }
+    pub fn ldflags() -> String {
+        env::var("LDFLAGS").unwrap_or_default()
+    }
+    pub fn host() -> String {
+        env::var("HOST").unwrap_or_else(|_| format!("{}-pc-linux-gnu", arch()))
+    }
+    pub fn chost() -> String {
+        host()
+    } // Cross-compile için ayrılmış, şu an host ile aynı
+
+    pub fn cc() -> String {
+        env::var("CC").unwrap_or_else(|_| format!("{}-gcc", host()))
+    }
+    pub fn cxx() -> String {
+        env::var("CXX").unwrap_or_else(|_| format!("{}-g++", host()))
+    }
+    pub fn ar() -> String {
+        get_binutils_info("ar")
+    }
+    pub fn ld() -> String {
+        get_binutils_info("ld")
+    }
+    pub fn ranlib() -> String {
+        get_binutils_info("ranlib")
+    }
+    pub fn r#as() -> String {
+        get_binutils_info("as")
+    }
+    pub fn nm() -> String {
+        get_binutils_info("nm")
+    }
+    pub fn f77() -> String {
+        get_binutils_info("g77")
+    }
+    pub fn gcj() -> String {
+        get_binutils_info("gcj")
+    }
+
+    fn get_binutils_info(util: &str) -> String {
+        let cross_name = format!("{}-{}", host(), util);
+        if exist_binary(&cross_name) {
+            cross_name
+        } else {
+            util.to_string()
+        }
+    }
+
+    pub fn exist_binary(name: &str) -> bool {
+        if let Ok(path_var) = env::var("PATH") {
+            for dir in path_var.split(':') {
+                if Path::new(dir).join(name).exists() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    pub fn env_var(key: &str) -> Option<String> {
+        env::var(key).ok()
+    }
+
+    pub fn make_jobs() -> String {
+        if let Ok(v) = env::var("MAKEOPTS") {
+            let cleaned = v
+                .to_lowercase()
+                .replace("-j", "")
+                .replace('j', "")
+                .trim()
+                .to_string();
+            if !cleaned.is_empty() && cleaned.chars().all(|c| c.is_ascii_digit()) {
+                return cleaned;
+            }
+        }
+        if let Ok(v) = env::var("JOBS") {
+            if !v.is_empty() && v.chars().all(|c| c.is_ascii_digit()) {
+                return v;
+            }
+        }
+        std::thread::available_parallelism()
+            .map(|n| n.get().to_string())
+            .unwrap_or_else(|_| "1".to_string())
+    }
+
+    // Paket bilgileri (çevre değişkenlerinden okunur)
+    pub fn src_name() -> String {
+        env::var("SRC_NAME").unwrap_or_default()
+    }
+    pub fn src_version() -> String {
+        env::var("SRC_VERSION").unwrap_or_default()
+    }
+    pub fn src_release() -> String {
+        env::var("SRC_RELEASE").unwrap_or_else(|_| "1".to_string())
+    }
+    pub fn src_tag() -> String {
+        format!("{}-{}-{}", src_name(), src_version(), src_release())
+    }
+    pub fn src_dir() -> String {
+        format!("{}-{}", src_name(), src_version())
+    }
+
+    pub fn install_dir() -> String {
+        env::var("INSTALL_DIR").unwrap_or_else(|_| "install_root".to_string())
+    }
+    pub fn work_dir() -> String {
+        env::var("WORK_DIR").unwrap_or_else(|_| ".".to_string())
+    }
+    pub fn pkg_dir() -> String {
+        env::var("PKG_DIR").unwrap_or_else(|_| "/var/cache/pisi/packages".to_string())
+    }
+
+    pub fn cur_dir() -> String {
+        env::current_dir()
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_default()
+    }
+    pub fn cur_kernel() -> String {
+        nix_uname()
+    }
+    pub fn cur_python() -> String {
+        // Python sürümünü sys komutundan al
+        std::process::Command::new("python3")
+            .args([
+                "-c",
+                "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')",
+            ])
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .map(|s| s.trim().to_string())
+            .unwrap_or_else(|| "python3".to_string())
+    }
+    pub fn cur_perl() -> String {
+        std::process::Command::new("perl")
+            .args(["-e", "printf '%vd', $^V"])
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .map(|s| s.trim().to_string())
+            .unwrap_or_else(|| "5".to_string())
+    }
+
+    pub fn build_type() -> String {
+        env::var("PISI_BUILD_TYPE").unwrap_or_default()
+    }
+
+    // Standart dizinler (variables.py Dirs sınıfı)
+    pub fn doc_dir() -> String {
+        "usr/share/doc".to_string()
+    }
+    pub fn sbin_dir() -> String {
+        env::var("PISI_SBINDIR").unwrap_or_else(|_| "usr/bin".to_string())
+    }
+    pub fn man_dir() -> String {
+        "usr/share/man".to_string()
+    }
+    pub fn info_dir() -> String {
+        "usr/share/info".to_string()
+    }
+    pub fn data_dir() -> String {
+        "usr/share".to_string()
+    }
+    pub fn conf_dir() -> String {
+        "etc".to_string()
+    }
+    pub fn localstate_dir() -> String {
+        "var".to_string()
+    }
+    pub fn libexec_dir() -> String {
+        "usr/libexec".to_string()
+    }
+    pub fn default_prefix_dir() -> String {
+        "usr".to_string()
+    }
+    pub fn emul32_prefix_dir() -> String {
+        "emul32".to_string()
+    }
+    pub fn kde_dir() -> String {
+        env::var("KDEDIR").unwrap_or_else(|_| "/usr".to_string())
+    }
+    pub fn qt_dir() -> String {
+        env::var("QTDIR").unwrap_or_else(|_| "/usr".to_string())
+    }
+
+    fn nix_uname() -> String {
+        std::process::Command::new("uname")
+            .arg("-r")
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .map(|s| s.trim().to_string())
+            .unwrap_or_default()
+    }
+}
+
+/// UsrMerge: /sbin ve /usr/sbin içindeki dosyaları /usr/bin'e taşır,
+/// özgün konumlarına sembolik bağlantı oluşturur.
+/// /bin içindeki dosyaları da /usr/bin'e taşır.
+pub fn merge_usr_dirs(install_root: &str) -> Result<(), String> {
+    let root = Path::new(install_root);
+    let usr_bin = root.join("usr/bin");
+    let usr_sbin = root.join("usr/sbin");
+    let bin_dir = root.join("bin");
+    let sbin_dir = root.join("sbin");
+
+    let sbindir_override = std::env::var("PISI_SBINDIR");
+    let merge_disabled = sbindir_override.as_deref() == Ok("usr/sbin");
+
+    // 1. /bin → /usr/bin (her zaman yap)
+    if bin_dir.exists() {
+        fs::create_dir_all(&usr_bin).map_err(|e| e.to_string())?;
+        for entry in fs::read_dir(&bin_dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let file_name = entry.file_name();
+            let src = entry.path();
+            if src.is_file() || src.is_symlink() {
+                let dst = usr_bin.join(&file_name);
+                if !dst.exists() {
+                    fs::rename(&src, &dst).map_err(|e| e.to_string())?;
+                }
+            }
+        }
+        // /bin → /usr/bin sembolik bağı
+        if !bin_dir.is_symlink() {
+            let _ = std::fs::remove_dir(&bin_dir);
+            #[cfg(unix)]
+            std::os::unix::fs::symlink("usr/bin", &bin_dir).ok();
+        }
+    }
+
+    // 2. /sbin → /usr/bin (her zaman yap)
+    if sbin_dir.exists() {
+        fs::create_dir_all(&usr_bin).map_err(|e| e.to_string())?;
+        for entry in fs::read_dir(&sbin_dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let file_name = entry.file_name();
+            let src = entry.path();
+            if src.is_file() || src.is_symlink() {
+                let dst = usr_bin.join(&file_name);
+                if !dst.exists() {
+                    fs::rename(&src, &dst).map_err(|e| e.to_string())?;
+                }
+            }
+        }
+        // /sbin → /usr/bin sembolik bağı
+        if !sbin_dir.is_symlink() {
+            let _ = std::fs::remove_dir(&sbin_dir);
+            #[cfg(unix)]
+            std::os::unix::fs::symlink("usr/bin", &sbin_dir).ok();
+        }
+    }
+
+    // 3. /usr/sbin → /usr/bin (merge_disabled değilse, yani PISI_SBINDIR=usr/sbin değilse)
+    if !merge_disabled && usr_sbin.exists() {
+        // İlk geçiş: /usr/sbin içindeki her dosyayı /usr/bin'e taşı
+        let mut has_entries = false;
+        for entry in fs::read_dir(&usr_sbin).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let file_name = entry.file_name();
+            let src = entry.path();
+            if src.is_file() || src.is_symlink() {
+                has_entries = true;
+                let dst = usr_bin.join(&file_name);
+                if !dst.exists() {
+                    fs::rename(&src, &dst).map_err(|e| {
+                        format!(
+                            "merge_usr_dirs: {} -> {}: {}",
+                            src.display(),
+                            dst.display(),
+                            e
+                        )
+                    })?;
+                }
+                // Sembolik bağ: /usr/sbin/dosya → ../bin/dosya
+                #[cfg(unix)]
+                std::os::unix::fs::symlink(
+                    format!("../bin/{}", file_name.to_string_lossy()),
+                    &src,
+                )
+                .ok();
+            }
+        }
+        if has_entries {
+            println!("  ✔ usrmerge: /usr/sbin → /usr/bin (sembolik bağlar oluşturuldu)");
+        }
+    }
+
+    // 4. sbindir usr/sbin değilse, dosbin tarafından oluşturulan 
+    //    sembolik bağları kontrol et (güvenlik amaçlı)
+    if !merge_disabled && usr_sbin.exists() {
+        for entry in fs::read_dir(&usr_sbin).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            if entry.file_type().map(|t| t.is_symlink()).unwrap_or(false) {
+                continue; // sembolik bağ zaten var
+            }
+            let file_name = entry.file_name();
+            let src = entry.path();
+            if src.is_file() {
+                let dst = usr_bin.join(&file_name);
+                if !dst.exists() {
+                    fs::rename(&src, &dst).map_err(|e| e.to_string())?;
+                }
+                #[cfg(unix)]
+                std::os::unix::fs::symlink(
+                    format!("../bin/{}", file_name.to_string_lossy()),
+                    &src,
+                )
+                .ok();
+            }
+        }
+    }
+
+    println!("{}", t!("api_usrmerge_done"));
+    Ok(())
+}
+
+/// ELF dosyalarından sembolleri temizleyerek boyut küçültmesi yapar (strip).
+pub fn strip<P: AsRef<Path>>(path: P) -> Result<(), String> {
+    let p = path.as_ref();
+    run_command(
+        "strip",
+        &["--strip-unneeded", p.to_str().ok_or("Geçersiz yol")?],
+    )
+}
+
+/// Kurulum dizinindeki tüm ikili dosyaları ve kütüphaneleri otomatik olarak şeritler (strip).
+pub fn strip_dir<P: AsRef<Path>>(dest_dir: P) -> Result<(), String> {
+    let root = dest_dir.as_ref();
+    println!("{}", t!("api_strip_dir", path = root.display()));
+
+    if root.is_dir() {
+        for entry in fs::read_dir(root).map_err(|e| e.to_string())?.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                strip_dir(&path)?;
+            } else {
+                let path_str = path.to_string_lossy();
+                let is_binary = path_str.contains("/bin/")
+                    || path_str.contains("/sbin/")
+                    || path_str.contains("/lib/")
+                    || path_str.contains(".so");
+                if is_binary && path.is_file() {
+                    let _ = strip(&path);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+// --- YENİ FONKSİYONLAR: pisitools eksikleri ---
+
+/// Hedef dizin oluşturur (pisitools.dodir muadili).
+pub fn dodir(dest_root: &str, dir: &str) -> Result<(), String> {
+    let path = Path::new(dest_root).join(dir.trim_start_matches('/'));
+    println!("{}", t!("api_dodir", path = path.display()));
+    fs::create_dir_all(&path).map_err(|e| format!("{}: {}: {}", t!("api_dodir"), path.display(), e))
+}
+
+/// Sembolik bağ oluşturur (pisitools.dosym muadili).
+pub fn dosym(dest_root: &str, source: &str, destination: &str) -> Result<(), String> {
+    let dest_path = Path::new(dest_root).join(destination.trim_start_matches('/'));
+    if let Some(parent) = dest_path.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    println!(
+        "{}",
+        t!("api_dosym", src = source, dest = dest_path.display())
+    );
+    #[cfg(unix)]
+    return std::os::unix::fs::symlink(source, &dest_path)
+        .map_err(|e| t!("api_symlink_err", error = e).to_string());
+    #[cfg(not(unix))]
+    Err(t!("api_symlink_unix_only").to_string())
+}
+
+/// Dosya taşıma (pisitools.domove muadili).
+pub fn domove(dest_root: &str, source: &str, destination: &str) -> Result<(), String> {
+    let src_path = Path::new(dest_root).join(source.trim_start_matches('/'));
+    let dst_dir = Path::new(dest_root).join(destination.trim_start_matches('/'));
+    fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?;
+
+    let filename = src_path
+        .file_name()
+        .ok_or_else(|| "Kaynak dosya adı okunamadı".to_string())?;
+    let dst_path = dst_dir.join(filename);
+
+    println!(
+        "{}",
+        t!(
+            "api_domove",
+            src = src_path.display(),
+            dest = dst_path.display()
+        )
+    );
+    fs::rename(&src_path, &dst_path)
+        .map_err(|e| t!("api_move_err", src = src_path.display(), error = e).to_string())
+}
+
+/// Dosya kopyalama (pisitools.insinto muadili).
+pub fn insinto(dest_root: &str, dest_dir: &str, source: &str) -> Result<(), String> {
+    let full_dest = Path::new(dest_root).join(dest_dir.trim_start_matches('/'));
+    fs::create_dir_all(&full_dest).map_err(|e| e.to_string())?;
+
+    let src_path = Path::new(source);
+    let filename = src_path
+        .file_name()
+        .ok_or_else(|| "Kaynak dosya adı okunamadı".to_string())?;
+    let dst_path = full_dest.join(filename);
+
+    println!(
+        "{}",
+        t!("api_insinto", src = source, dest = dst_path.display())
+    );
+    if src_path.is_dir() {
+        run_command("cp", &["-pPR", source, dst_path.to_str().unwrap()])
+    } else {
+        fs::copy(src_path, &dst_path)
+            .map(|_| ())
+            .map_err(|e| t!("api_copy_err", error = e).to_string())
+    }
+}
+
+/// Çalıştırılabilir dosya kurulumu (pisitools.doexe muadili).
+pub fn doexe<P: AsRef<Path>>(dest_root: &str, source: P, dest_dir: &str) -> Result<(), String> {
+    let full_dest = Path::new(dest_root).join(dest_dir.trim_start_matches('/'));
+    fs::create_dir_all(&full_dest).map_err(|e| e.to_string())?;
+    let src = source.as_ref();
+    let dst = full_dest.join(src.file_name().ok_or("Geçersiz dosya adı")?);
+    println!(
+        "{}",
+        t!("api_doexe", src = src.display(), dest = dst.display())
+    );
+    run_command(
+        "install",
+        &["-m0755", src.to_str().unwrap(), dst.to_str().unwrap()],
+    )
+}
+
+/// Statik kütüphane kurulumu (pisitools.dolib_a muadili).
+pub fn dolib_a<P: AsRef<Path>>(dest_root: &str, source: P, dest_dir: &str) -> Result<(), String> {
+    let full_dest = Path::new(dest_root).join(dest_dir.trim_start_matches('/'));
+    fs::create_dir_all(&full_dest).map_err(|e| e.to_string())?;
+    let src = source.as_ref();
+    let dst = full_dest.join(src.file_name().ok_or("Geçersiz dosya adı")?);
+    println!(
+        "{}",
+        t!("api_dolib_a", src = src.display(), dest = dst.display())
+    );
+    run_command(
+        "install",
+        &["-m0644", src.to_str().unwrap(), dst.to_str().unwrap()],
+    )
+}
+
+/// Dinamik kütüphane kurulumu (pisitools.dolib_so muadili).
+pub fn dolib_so<P: AsRef<Path>>(dest_root: &str, source: P, dest_dir: &str) -> Result<(), String> {
+    let full_dest = Path::new(dest_root).join(dest_dir.trim_start_matches('/'));
+    fs::create_dir_all(&full_dest).map_err(|e| e.to_string())?;
+    let src = source.as_ref();
+    let dst = full_dest.join(src.file_name().ok_or("Geçersiz dosya adı")?);
+    println!(
+        "{}",
+        t!("api_dolib_so", src = src.display(), dest = dst.display())
+    );
+    run_command(
+        "install",
+        &["-m0755", src.to_str().unwrap(), dst.to_str().unwrap()],
+    )
+}
+
+/// Dizin silme (pisitools.removeDir muadili).
+pub fn remove_dir(dest_root: &str, dir: &str) -> Result<(), String> {
+    let path = Path::new(dest_root).join(dir.trim_start_matches('/'));
+    println!("{}", t!("api_remove_dir", path = path.display()));
+    if path.exists() && path.is_dir() {
+        fs::remove_dir_all(&path)
+            .map_err(|e| t!("api_remove_dir_err", path = path.display(), error = e).to_string())
+    } else {
+        Ok(())
+    }
+}
+
+/// Pixmap dosyası kurulumu (pisitools.dopixmaps muadili).
+pub fn dopixmaps<P: AsRef<Path>>(dest_root: &str, source: P) -> Result<(), String> {
+    let path = Path::new(dest_root).join("usr/share/pixmaps");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    install(source, path)
+}
+
+// --- YENİ FONKSİYONLAR: autotools eksikleri ---
+
+/// Ham configure çağrısı, Pisi standart dizin argümanları olmadan (autotools.rawConfigure muadili).
+pub fn raw_configure(args: &[&str]) -> Result<(), String> {
+    let mut default_args: Vec<&str> = Vec::new();
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!("api_running_config", args = default_args.join(" "))
+    );
+    run_command("./configure", &default_args)
+}
+
+/// aclocal komutu (autotools.aclocal muadili).
+pub fn aclocal(args: &[&str]) -> Result<(), String> {
+    let mut default_args: Vec<&str> = Vec::new();
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!("api_running_aclocal", args = default_args.join(" "))
+    );
+    run_command("aclocal", &default_args)
+}
+
+/// autoconf komutu (autotools.autoconf muadili).
+pub fn autoconf(args: &[&str]) -> Result<(), String> {
+    let mut default_args: Vec<&str> = Vec::new();
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!("api_running_autoconf", args = default_args.join(" "))
+    );
+    run_command("autoconf", &default_args)
+}
+
+/// autoreconf komutu (autotools.autoreconf muadili).
+pub fn autoreconf(args: &[&str]) -> Result<(), String> {
+    let mut default_args: Vec<&str> = Vec::new();
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!("api_running_autoreconf", args = default_args.join(" "))
+    );
+    run_command("autoreconf", &default_args)
+}
+
+/// automake komutu (autotools.automake muadili).
+pub fn automake(args: &[&str]) -> Result<(), String> {
+    let mut default_args: Vec<&str> = Vec::new();
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!("api_running_automake", args = default_args.join(" "))
+    );
+    run_command("automake", &default_args)
+}
+
+/// autoheader komutu (autotools.autoheader muadili).
+pub fn autoheader(args: &[&str]) -> Result<(), String> {
+    let mut default_args: Vec<&str> = Vec::new();
+    default_args.extend_from_slice(args);
+    println!(
+        "{}",
+        t!("api_running_autoheader", args = default_args.join(" "))
+    );
+    run_command("autoheader", &default_args)
+}
+
+/// Info dir dosyasını temizler (autotools.fixInfoDir muadili).
+pub fn fix_info_dir(dest_root: &str) -> Result<(), String> {
+    let info_dir = Path::new(dest_root).join("usr/share/info/dir");
+    if info_dir.exists() {
+        println!("{}", t!("api_fix_info_dir", path = info_dir.display()));
+        fs::remove_file(&info_dir).map_err(|e| t!("api_fix_info_dir_err", error = e).to_string())
+    } else {
+        Ok(())
+    }
+}
+
+/// HTML doküman kurulumu (pisitools.dohtml muadili).
+pub fn dohtml(dest_root: &str, sources: &[&str], dest_dir: Option<&str>) -> Result<(), String> {
+    let pkg_name = env::var("SRC_NAME").unwrap_or_else(|_| "unknown".to_string());
+    let sub_dir = dest_dir.unwrap_or(&pkg_name);
+    let target = Path::new(dest_root)
+        .join(get::doc_dir())
+        .join(sub_dir)
+        .join("html");
+    fs::create_dir_all(&target).map_err(|e| e.to_string())?;
+
+    for src in sources {
+        run_command("cp", &["-pPR", src, target.to_str().unwrap()])?;
+    }
+    Ok(())
+}
+
+/// MO dosyası oluşturma ve kurulumu (pisitools.domo muadili).
+pub fn domo(
+    dest_root: &str,
+    source: &str,
+    locale: &str,
+    destination_file: &str,
+) -> Result<(), String> {
+    let target_dir = Path::new(dest_root)
+        .join("usr/share/locale")
+        .join(locale)
+        .join("LC_MESSAGES");
+    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    run_command("msgfmt", &[source, "-o", "messages.mo"])?;
+    fs::rename("messages.mo", target_dir.join(destination_file)).map_err(|e| e.to_string())
+}
+
+/// Yeni doküman kurulumu (pisitools.newdoc muadili).
+pub fn newdoc(dest_root: &str, source: &str, destination: &str) -> Result<(), String> {
+    let pkg_name = env::var("SRC_NAME").unwrap_or_else(|_| "unknown".to_string());
+    let dest_path = Path::new(destination);
+    let dest_dir = dest_path
+        .parent()
+        .map(|p| p.to_str().unwrap_or(""))
+        .unwrap_or("");
+    let dest_file = dest_path
+        .file_name()
+        .ok_or("Geçersiz hedef dosya")?
+        .to_str()
+        .unwrap();
+
+    let target_dir = Path::new(dest_root)
+        .join(get::doc_dir())
+        .join(pkg_name)
+        .join(dest_dir);
+    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    fs::copy(source, target_dir.join(dest_file))
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
+/// Yeni man sayfası kurulumu (pisitools.newman muadili).
+pub fn newman(dest_root: &str, source: &str, destination: &str) -> Result<(), String> {
+    let dest_path = Path::new(destination);
+    let section = dest_path
+        .extension()
+        .ok_or("Man sayfasının uzantısı (section) yok")?
+        .to_str()
+        .unwrap();
+    let target_dir = Path::new(dest_root)
+        .join(get::man_dir())
+        .join(format!("man{}", section));
+    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    fs::copy(source, target_dir.join(dest_path.file_name().unwrap()))
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}

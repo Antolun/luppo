@@ -1,0 +1,1 @@
+/home/solzic0/Projeler/LupuS/pisi/target/release/libpisi_spec.rlib: /home/solzic0/Projeler/LupuS/pisi/pisi-spec/src/kdl/mod.rs /home/solzic0/Projeler/LupuS/pisi/pisi-spec/src/kdl/models.rs /home/solzic0/Projeler/LupuS/pisi/pisi-spec/src/lib.rs /home/solzic0/Projeler/LupuS/pisi/pisi-spec/src/xml/mod.rs /home/solzic0/Projeler/LupuS/pisi/pisi-spec/src/xml/models.rs

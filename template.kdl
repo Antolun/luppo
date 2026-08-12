@@ -1,0 +1,107 @@
+PisiPackage {
+    Source {
+        Name ""
+        Homepage ""
+        Packager {
+            Name "PisiLinux Community"
+            Email "admins@pisilinux.org"
+        }
+        License "FTL"
+        License "GPLv2"
+        Summary ""
+        Summary lang="tr" ""
+        Description ""
+        Description lang="tr" ""
+        Provides {
+            Isa "library"
+        }
+        Archive sha1sum="" type="tarxz" {
+            ""
+        }
+        BuildDependencies {
+            Dependency "zlib-devel"
+        }
+        Patches {
+            Patch "modules.patch" level="1"
+        }
+    }
+
+    Package {
+        Name "freetype"
+        Summary ""
+        Description ""
+        Icon "pisi-software-all"
+        Screenshot ""
+        PartOf ""
+        RuntimeDependencies {
+            Dependency "zlib"
+        }
+        Files {
+            Path "/usr/lib" file-type="library"
+            Path "/usr/share/doc" file-type="doc"
+            Path "/usr/share/man" file-type="man"
+        }
+        Actions {
+        	steps "make CFLAGS='{default_cflags} -fno-stack-protector -fno-strict-aliasing'"
+            steps "./configure --with-harfbuzz=no --enable-freetype-config --with-brotli=yes"
+            steps "make"
+            steps "make DESTDIR={install_root} install"
+            steps "pisitools.dodoc('ChangeLog', 'README')"
+        }
+    }
+
+    Package {
+        Name "package-devel"
+        Summary ""
+        Summary lang="tr" ""
+        Icon "pisi-software-all"
+        Screenshot ""
+        PartOf "system.devel"
+        RuntimeDependencies {
+            Dependency "freetype" release="current"
+            Dependency "zlib-devel"
+        }
+        Files {
+            Path "/usr/bin" file-type="executable"
+            Path "/usr/include" file-type="header"
+            Path "/usr/lib/pkgconfig" file-type="library"
+            Path "/usr/lib32/pkgconfig" file-type="library"
+            Path "/usr/share/aclocal" file-type="data"
+        }
+    }
+
+    Package {
+        Name "package-32bit"
+        Summary ""
+        Summary lang="tr" ""
+        Icon "pisi-software-all"
+        Screenshot ""
+        PartOf "emul32"
+        BuildType "emul32"
+        BuildDependencies {
+            Dependency "zlib-32bit"
+            Dependency "libpng-32bit"
+        }
+        Actions {
+            steps "./configure --libdir=/usr/lib32 --disable-static --with-harfbuzz=no --enable-freetype-config --without-brotli"
+            steps "make"
+            steps "make DESTDIR={install_root} install"
+        }
+        RuntimeDependencies {
+            Dependency "zlib-32bit"
+            Dependency "libpng-32bit"
+        }
+        Files {
+            Path "/usr/lib32" file-type="library"
+        }
+    }
+
+    History {
+        Update release=1 date="2026-03-23" {
+            Version "2.14.3"
+            Comment "Version bump."
+            Name "Pisi Linux Community"
+            Email "admin@pisilinux.org"
+        }
+    }
+}

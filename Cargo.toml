@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "pisi-spec",
+    "pisi-core",
+    "pisi-builder",
+    "pisi",
+]
+resolver = "2"
+
+

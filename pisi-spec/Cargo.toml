@@ -1,0 +1,17 @@
+[package]
+name = "pisi-spec"
+version = "3.0.0"
+edition = "2024"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+kdl = "6"
+quick-xml = { version = "0.38", features = ["serialize"], optional = true }
+roxmltree = { version = "0.19", optional = true }
+regex = "1.10"
+chrono = "0.4"
+rust-i18n = "3.1"
+
+[features]
+default = ["legacy-xml"]
+legacy-xml = ["dep:quick-xml", "dep:roxmltree"]
