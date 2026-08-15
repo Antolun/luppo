@@ -1,9 +1,0 @@
-service type="server" default="on" {
-    description {
-        en "Example Service Description"
-        tr "Örnek Servis Açıklaması"
-    }
-    process command="/usr/sbin/SERVIS_ADI" pidfile="/run/SERVIS_ADI.pid"
-    start donotify=true
-    stop donotify=true
-}
