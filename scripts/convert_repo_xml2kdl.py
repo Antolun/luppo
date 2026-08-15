@@ -27,7 +27,7 @@ def convert_components(xml_path, kdl_path):
         print("No <Components> found")
         return
 
-    lines = ["// PisiLinux Components\n"]
+    lines = ["// LupuS Components\n"]
     for c in comps.findall("Component"):
         name = text(c.find("Name"))
         lines.append(f'component "{kdl_escape(name)}" {{')
@@ -68,7 +68,7 @@ def convert_groups(xml_path, kdl_path):
         print("No <Groups> found")
         return
 
-    lines = ["// PisiLinux Groups\n"]
+    lines = ["// LupuS Groups\n"]
     for g in groups_el.findall("Group"):
         name = text(g.find("Name"))
         lines.append(f'group "{kdl_escape(name)}" {{')
@@ -91,7 +91,7 @@ def convert_distribution(xml_path, kdl_path):
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
-    lines = ["// PisiLinux Distribution\n"]
+    lines = ["// LupuS Distribution\n"]
     lines.append("distribution {")
 
     sn = root.find("SourceName")
@@ -133,7 +133,7 @@ def convert_distribution(xml_path, kdl_path):
 # ── main ──
 
 if __name__ == "__main__":
-    base = "/media/USER/REPO/LUPUS/LupuS_docker/pisi/core"
+    base = "/media/USER/REPO/LUPUS/LupuS_docker/luppo/core"
     convert_components(os.path.join(base, "components.xml"), os.path.join(base, "components.kdl"))
     convert_groups(os.path.join(base, "groups.xml"), os.path.join(base, "groups.kdl"))
     convert_distribution(os.path.join(base, "distribution.xml"), os.path.join(base, "distribution.kdl"))

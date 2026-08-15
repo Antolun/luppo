@@ -1,0 +1,67 @@
+LuppoPackage {
+    Source {
+        Name "luppo"
+        Homepage "https://github.com/Antolun/luppo"
+        Packager {
+            Name "Antolun"
+            Email "admin@antolun.com"
+        }
+        License "GPL-3.0-or-later"
+        Summary "LupuS package manager (Rust implementation)"
+        Description "Luppo is a complete rewrite of the Luppo package manager from Python to Rust. It handles package building, dependency resolution, installation, and removal with improved performance."
+        PartOf "system.base"
+        Provides {
+            Isa "app:console"
+        }
+            Archive sha1sum="to-be-filled" {
+                "https://github.com/Antolun/luppo/archive/v4.0.0.tar.gz"
+            }
+        BuildDependencies {
+        Dependency "rust" version-from=">=1.70.0"
+        Dependency "python3" version-from=">=3.8"
+        Dependency "python3-devel" version-from=">=3.8"
+        Dependency "dbus"
+        Dependency "dbus-devel"
+        Dependency "glibc-devel"
+        Dependency "openssl-devel"
+        Dependency "xz-devel"
+        Dependency "zlib-devel"
+        Dependency "bzip2-devel"
+        Dependency "zstd-devel"
+        }
+    }
+    Package {
+        Name "luppo"
+        RuntimeDependencies {
+        Dependency "python3" version-from=">=3.8"
+        Dependency "dbus"
+        Dependency "glibc"
+        Dependency "openssl"
+        Dependency "xz"
+        Dependency "zlib"
+        Dependency "bzip2"
+        Dependency "zstd"
+        }
+        Files {
+                Path "/usr/bin/luppo" file-type="executable"
+                Path "/usr/bin/lsluppo" file-type="executable"
+                Path "/usr/bin/unluppo" file-type="executable"
+                Path "/usr/bin/resolve_core_order" file-type="executable"
+            }
+        Actions {
+                steps "cargo build --release"
+                steps "install -Dm755 target/release/luppo {install_root}/usr/bin/luppo"
+                steps "install -Dm755 target/release/lsluppo {install_root}/usr/bin/lsluppo"
+                steps "install -Dm755 target/release/unluppo {install_root}/usr/bin/unluppo"
+                steps "install -Dm755 target/release/resolve_core_order {install_root}/usr/bin/resolve_core_order"
+            }
+    }
+    History {
+        Update release=1 date="2026-06-23" {
+            Version "4.0.0"
+            Comment "Initial release of luppo as a system package."
+            Name "Antolun"
+            Email "admin@antolun.com"
+        }
+    }
+}

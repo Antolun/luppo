@@ -1,4 +1,4 @@
-_pisi() {
+_luppo() {
     local i cur prev opts cmd
     COMPREPLY=()
     if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
@@ -14,142 +14,142 @@ _pisi() {
     do
         case "${cmd},${i}" in
             ",$1")
-                cmd="pisi"
+                cmd="luppo"
                 ;;
-            pisi,add-repo)
-                cmd="pisi__subcmd__add__subcmd__repo"
+            luppo,add-repo)
+                cmd="luppo__subcmd__add__subcmd__repo"
                 ;;
-            pisi,blame)
-                cmd="pisi__subcmd__blame"
+            luppo,blame)
+                cmd="luppo__subcmd__blame"
                 ;;
-            pisi,build)
-                cmd="pisi__subcmd__build"
+            luppo,build)
+                cmd="luppo__subcmd__build"
                 ;;
-            pisi,check-components)
-                cmd="pisi__subcmd__check__subcmd__components"
+            luppo,check-components)
+                cmd="luppo__subcmd__check__subcmd__components"
                 ;;
-            pisi,check-install)
-                cmd="pisi__subcmd__check__subcmd__install"
+            luppo,check-install)
+                cmd="luppo__subcmd__check__subcmd__install"
                 ;;
-            pisi,check-repo)
-                cmd="pisi__subcmd__check__subcmd__repo"
+            luppo,check-repo)
+                cmd="luppo__subcmd__check__subcmd__repo"
                 ;;
-            pisi,clean)
-                cmd="pisi__subcmd__clean"
+            luppo,clean)
+                cmd="luppo__subcmd__clean"
                 ;;
-            pisi,configure-pending)
-                cmd="pisi__subcmd__configure__subcmd__pending"
+            luppo,configure-pending)
+                cmd="luppo__subcmd__configure__subcmd__pending"
                 ;;
-            pisi,delete-cache)
-                cmd="pisi__subcmd__delete__subcmd__cache"
+            luppo,delete-cache)
+                cmd="luppo__subcmd__delete__subcmd__cache"
                 ;;
-            pisi,delta)
-                cmd="pisi__subcmd__delta"
+            luppo,delta)
+                cmd="luppo__subcmd__delta"
                 ;;
-            pisi,disable-repo)
-                cmd="pisi__subcmd__disable__subcmd__repo"
+            luppo,disable-repo)
+                cmd="luppo__subcmd__disable__subcmd__repo"
                 ;;
-            pisi,emerge)
-                cmd="pisi__subcmd__emerge"
+            luppo,emerge)
+                cmd="luppo__subcmd__emerge"
                 ;;
-            pisi,emerge-up)
-                cmd="pisi__subcmd__emerge__subcmd__up"
+            luppo,emerge-up)
+                cmd="luppo__subcmd__emerge__subcmd__up"
                 ;;
-            pisi,enable-repo)
-                cmd="pisi__subcmd__enable__subcmd__repo"
+            luppo,enable-repo)
+                cmd="luppo__subcmd__enable__subcmd__repo"
                 ;;
-            pisi,fetch)
-                cmd="pisi__subcmd__fetch"
+            luppo,fetch)
+                cmd="luppo__subcmd__fetch"
                 ;;
-            pisi,graph)
-                cmd="pisi__subcmd__graph"
+            luppo,graph)
+                cmd="luppo__subcmd__graph"
                 ;;
-            pisi,help)
-                cmd="pisi__subcmd__help"
+            luppo,help)
+                cmd="luppo__subcmd__help"
                 ;;
-            pisi,history)
-                cmd="pisi__subcmd__history"
+            luppo,history)
+                cmd="luppo__subcmd__history"
                 ;;
-            pisi,index)
-                cmd="pisi__subcmd__index"
+            luppo,index)
+                cmd="luppo__subcmd__index"
                 ;;
-            pisi,info)
-                cmd="pisi__subcmd__info"
+            luppo,info)
+                cmd="luppo__subcmd__info"
                 ;;
-            pisi,install)
-                cmd="pisi__subcmd__install"
+            luppo,install)
+                cmd="luppo__subcmd__install"
                 ;;
-            pisi,list-available)
-                cmd="pisi__subcmd__list__subcmd__available"
+            luppo,list-available)
+                cmd="luppo__subcmd__list__subcmd__available"
                 ;;
-            pisi,list-components)
-                cmd="pisi__subcmd__list__subcmd__components"
+            luppo,list-components)
+                cmd="luppo__subcmd__list__subcmd__components"
                 ;;
-            pisi,list-files)
-                cmd="pisi__subcmd__list__subcmd__files"
+            luppo,list-files)
+                cmd="luppo__subcmd__list__subcmd__files"
                 ;;
-            pisi,list-installed)
-                cmd="pisi__subcmd__list__subcmd__installed"
+            luppo,list-installed)
+                cmd="luppo__subcmd__list__subcmd__installed"
                 ;;
-            pisi,list-newest)
-                cmd="pisi__subcmd__list__subcmd__newest"
+            luppo,list-newest)
+                cmd="luppo__subcmd__list__subcmd__newest"
                 ;;
-            pisi,list-orphaned)
-                cmd="pisi__subcmd__list__subcmd__orphaned"
+            luppo,list-orphaned)
+                cmd="luppo__subcmd__list__subcmd__orphaned"
                 ;;
-            pisi,list-pending)
-                cmd="pisi__subcmd__list__subcmd__pending"
+            luppo,list-pending)
+                cmd="luppo__subcmd__list__subcmd__pending"
                 ;;
-            pisi,list-repo)
-                cmd="pisi__subcmd__list__subcmd__repo"
+            luppo,list-repo)
+                cmd="luppo__subcmd__list__subcmd__repo"
                 ;;
-            pisi,list-sources)
-                cmd="pisi__subcmd__list__subcmd__sources"
+            luppo,list-sources)
+                cmd="luppo__subcmd__list__subcmd__sources"
                 ;;
-            pisi,list-upgrades)
-                cmd="pisi__subcmd__list__subcmd__upgrades"
+            luppo,list-upgrades)
+                cmd="luppo__subcmd__list__subcmd__upgrades"
                 ;;
-            pisi,rebuild-db)
-                cmd="pisi__subcmd__rebuild__subcmd__db"
+            luppo,rebuild-db)
+                cmd="luppo__subcmd__rebuild__subcmd__db"
                 ;;
-            pisi,remove)
-                cmd="pisi__subcmd__remove"
+            luppo,remove)
+                cmd="luppo__subcmd__remove"
                 ;;
-            pisi,remove-orphaned)
-                cmd="pisi__subcmd__remove__subcmd__orphaned"
+            luppo,remove-orphaned)
+                cmd="luppo__subcmd__remove__subcmd__orphaned"
                 ;;
-            pisi,remove-repo)
-                cmd="pisi__subcmd__remove__subcmd__repo"
+            luppo,remove-repo)
+                cmd="luppo__subcmd__remove__subcmd__repo"
                 ;;
-            pisi,repo-diff)
-                cmd="pisi__subcmd__repo__subcmd__diff"
+            luppo,repo-diff)
+                cmd="luppo__subcmd__repo__subcmd__diff"
                 ;;
-            pisi,reset-history)
-                cmd="pisi__subcmd__reset__subcmd__history"
+            luppo,reset-history)
+                cmd="luppo__subcmd__reset__subcmd__history"
                 ;;
-            pisi,rollback)
-                cmd="pisi__subcmd__rollback"
+            luppo,rollback)
+                cmd="luppo__subcmd__rollback"
                 ;;
-            pisi,search)
-                cmd="pisi__subcmd__search"
+            luppo,search)
+                cmd="luppo__subcmd__search"
                 ;;
-            pisi,search-file)
-                cmd="pisi__subcmd__search__subcmd__file"
+            luppo,search-file)
+                cmd="luppo__subcmd__search__subcmd__file"
                 ;;
-            pisi,temp)
-                cmd="pisi__subcmd__temp"
+            luppo,temp)
+                cmd="luppo__subcmd__temp"
                 ;;
-            pisi,toolchain)
-                cmd="pisi__subcmd__toolchain"
+            luppo,toolchain)
+                cmd="luppo__subcmd__toolchain"
                 ;;
-            pisi,update-repo)
-                cmd="pisi__subcmd__update__subcmd__repo"
+            luppo,update-repo)
+                cmd="luppo__subcmd__update__subcmd__repo"
                 ;;
-            pisi,upgrade)
-                cmd="pisi__subcmd__upgrade"
+            luppo,upgrade)
+                cmd="luppo__subcmd__upgrade"
                 ;;
-            pisi,version)
-                cmd="pisi__subcmd__version"
+            luppo,version)
+                cmd="luppo__subcmd__version"
                 ;;
             *)
                 ;;
@@ -157,7 +157,7 @@ _pisi() {
     done
 
     case "${cmd}" in
-        pisi)
+        luppo)
             opts="-D -y -v -d -N -L -u -p -j -h -V --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help --version add-repo blame build check-install check-components reset-history check-repo repo-diff toolchain clean configure-pending delete-cache delta disable-repo emerge emerge-up enable-repo fetch graph help history index info install list-available list-components list-files list-installed list-newest list-orphaned list-pending list-repo list-sources list-upgrades rebuild-db remove remove-orphaned remove-repo rollback search search-file update-repo upgrade version temp"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -219,7 +219,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__add__subcmd__repo)
+        luppo__subcmd__rs__subcmd__add__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <NAME> <URL>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -281,7 +281,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__blame)
+        luppo__subcmd__rs__subcmd__blame)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <PACKAGE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -343,7 +343,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__build)
+        luppo__subcmd__rs__subcmd__build)
             opts="-j -D -y -v -d -N -L -u -p -h --jobs --no-sandbox --install-deps --target --log-path --opt-level --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --download-only --ignore-check --help [SPEC]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -409,7 +409,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__check__subcmd__components)
+        luppo__subcmd__rs__subcmd__check__subcmd__components)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PATH]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -471,7 +471,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__check__subcmd__install)
+        luppo__subcmd__rs__subcmd__check__subcmd__install)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PACKAGES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -533,7 +533,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__check__subcmd__repo)
+        luppo__subcmd__rs__subcmd__check__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --circular --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -595,7 +595,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__clean)
+        luppo__subcmd__rs__subcmd__clean)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -657,7 +657,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__configure__subcmd__pending)
+        luppo__subcmd__rs__subcmd__configure__subcmd__pending)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -719,7 +719,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__delete__subcmd__cache)
+        luppo__subcmd__rs__subcmd__delete__subcmd__cache)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -781,7 +781,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__delta)
+        luppo__subcmd__rs__subcmd__delta)
             opts="-D -y -v -d -N -L -u -p -j -h --output-dir --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <OLD_PACKAGES>... <NEW_PACKAGE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -847,7 +847,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__disable__subcmd__repo)
+        luppo__subcmd__rs__subcmd__disable__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <REPO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -909,7 +909,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__emerge)
+        luppo__subcmd__rs__subcmd__emerge)
             opts="-D -y -v -d -N -L -u -p -j -h --no-deps --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PACKAGES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -971,7 +971,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__emerge__subcmd__up)
+        luppo__subcmd__rs__subcmd__emerge__subcmd__up)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1033,7 +1033,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__enable__subcmd__repo)
+        luppo__subcmd__rs__subcmd__enable__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <REPO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1095,7 +1095,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__fetch)
+        luppo__subcmd__rs__subcmd__fetch)
             opts="-o -D -y -v -d -N -L -u -p -j -h --output-dir --runtime-deps --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PACKAGES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1165,7 +1165,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__graph)
+        luppo__subcmd__rs__subcmd__graph)
             opts="-D -y -v -d -N -L -u -p -j -h --reverse --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <PACKAGE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1227,7 +1227,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__help)
+        luppo__subcmd__rs__subcmd__help)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [COMMAND]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1289,7 +1289,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__history)
+        luppo__subcmd__rs__subcmd__history)
             opts="-D -y -v -d -N -L -u -p -j -h --json --from --to --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1359,7 +1359,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__index)
+        luppo__subcmd__rs__subcmd__index)
             opts="-D -y -v -d -N -L -u -p -j -h --output --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <PATH>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1425,7 +1425,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__info)
+        luppo__subcmd__rs__subcmd__info)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <PACKAGE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1487,7 +1487,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__install)
+        luppo__subcmd__rs__subcmd__install)
             opts="-D -y -v -d -N -L -u -p -j -h --reinstall --force --download-only --ignore-check --ignore-dependency --ignore-comar --ignore-file-conflict --ignore-package-conflict --destdir --ignore-safety --no-sandbox --install-deps --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --log-path --opt-level --help [PACKAGES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1549,7 +1549,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__available)
+        luppo__subcmd__rs__subcmd__list__subcmd__available)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1611,7 +1611,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__components)
+        luppo__subcmd__rs__subcmd__list__subcmd__components)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1673,7 +1673,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__files)
+        luppo__subcmd__rs__subcmd__list__subcmd__files)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <PACKAGE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1735,7 +1735,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__installed)
+        luppo__subcmd__rs__subcmd__list__subcmd__installed)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1797,7 +1797,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__newest)
+        luppo__subcmd__rs__subcmd__list__subcmd__newest)
             opts="-D -y -v -d -N -L -u -p -j -h --limit --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1863,7 +1863,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__orphaned)
+        luppo__subcmd__rs__subcmd__list__subcmd__orphaned)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1925,7 +1925,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__pending)
+        luppo__subcmd__rs__subcmd__list__subcmd__pending)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1987,7 +1987,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__repo)
+        luppo__subcmd__rs__subcmd__list__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2049,7 +2049,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__sources)
+        luppo__subcmd__rs__subcmd__list__subcmd__sources)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2111,7 +2111,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__list__subcmd__upgrades)
+        luppo__subcmd__rs__subcmd__list__subcmd__upgrades)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2173,7 +2173,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__rebuild__subcmd__db)
+        luppo__subcmd__rs__subcmd__rebuild__subcmd__db)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2235,7 +2235,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__remove)
+        luppo__subcmd__rs__subcmd__remove)
             opts="-D -y -v -d -N -L -u -p -j -h --ignore-dependency --ignore-safety --ignore-comar --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PACKAGES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2297,7 +2297,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__remove__subcmd__orphaned)
+        luppo__subcmd__rs__subcmd__remove__subcmd__orphaned)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2359,7 +2359,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__remove__subcmd__repo)
+        luppo__subcmd__rs__subcmd__remove__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <REPO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2421,7 +2421,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__repo__subcmd__diff)
+        luppo__subcmd__rs__subcmd__repo__subcmd__diff)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <INDEX1> <INDEX2>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2483,7 +2483,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__reset__subcmd__history)
+        luppo__subcmd__rs__subcmd__reset__subcmd__history)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PATH]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2545,7 +2545,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__rollback)
+        luppo__subcmd__rs__subcmd__rollback)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <TRACE_ID>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2607,7 +2607,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__search)
+        luppo__subcmd__rs__subcmd__search)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <QUERY>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2669,7 +2669,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__search__subcmd__file)
+        luppo__subcmd__rs__subcmd__search__subcmd__file)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help <PATH>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2731,7 +2731,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__temp)
+        luppo__subcmd__rs__subcmd__temp)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [NAME]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2793,7 +2793,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__toolchain)
+        luppo__subcmd__rs__subcmd__toolchain)
             opts="-D -y -v -d -N -L -u -p -j -h --start --update --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2855,7 +2855,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__update__subcmd__repo)
+        luppo__subcmd__rs__subcmd__update__subcmd__repo)
             opts="-D -y -v -d -N -L -u -p -j -h --json --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2917,7 +2917,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__upgrade)
+        luppo__subcmd__rs__subcmd__upgrade)
             opts="-D -y -v -d -N -L -u -p -j -h --check-only --integrity-only --no-integrity --component --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help [PACKAGES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2983,7 +2983,7 @@ _pisi() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        pisi__subcmd__rs__subcmd__version)
+        luppo__subcmd__rs__subcmd__version)
             opts="-D -y -v -d -N -L -u -p -j -h --destdir --yes-all --verbose --debug --no-color --bandwidth-limit --username --password --jobs --download-only --ignore-check --log-path --opt-level --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -3049,7 +3049,7 @@ _pisi() {
 }
 
 if [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 4 || "${BASH_VERSINFO[0]}" -gt 4 ]]; then
-    complete -F _pisi -o nosort -o bashdefault -o default pisi
+    complete -F _luppo -o nosort -o bashdefault -o default luppo
 else
-    complete -F _pisi -o bashdefault -o default pisi
+    complete -F _luppo -o bashdefault -o default luppo
 fi

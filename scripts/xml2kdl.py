@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Batch convert pspec.xml → pspec.kdl while preserving actions.py & translations.xml."""
+"""Batch convert lopec.xml → lopec.kdl while preserving actions.py & translations.xml."""
 
 import os, sys, re, textwrap
 from xml.etree import ElementTree as ET
@@ -242,7 +242,7 @@ def gen_patches(patches_el: ET.Element | None, level: int) -> list[str]:
 # ── main converter ───────────────────────────────────────────────────────
 
 def convert_one(xml_path: str, kdl_path: str, *, force: bool = False, no_clobber: bool = False):
-    """Convert a single pspec.xml to {package_name}.kdl."""
+    """Convert a single lopec.xml to {package_name}.kdl."""
     if os.path.exists(kdl_path):
         if no_clobber:
             return False, f"SKIP (exists)"
@@ -256,14 +256,14 @@ def convert_one(xml_path: str, kdl_path: str, *, force: bool = False, no_clobber
         return False, f"XML parse error: {e}"
 
     root = tree.getroot()
-    if root.tag != "PISI":
+    if root.tag != "LUPPO":
         return False, f"Unexpected root tag: {root.tag}"
 
     src = root.find("Source")
     if src is None:
         return False, "No <Source> found"
 
-    out_lines = ["PisiPackage {"]  # Start PisiPackage
+    out_lines = ["LuppoPackage {"]  # Start LuppoPackage
 
     # ── Source ──
     source_lines = []
@@ -350,7 +350,7 @@ def convert_one(xml_path: str, kdl_path: str, *, force: bool = False, no_clobber
         pkg_lines.extend(gen_additional_files(pkg, 2))
 
         # Icon & Screenshot (hardcoded defaults)
-        pkg_lines.append(f'{indent(2)}Icon "pisi-software-all"')
+        pkg_lines.append(f'{indent(2)}Icon "luppo-software-all"')
         pkg_lines.append(f'{indent(2)}Screenshot ""')
 
         # Provides (COMAR)
@@ -367,7 +367,7 @@ def convert_one(xml_path: str, kdl_path: str, *, force: bool = False, no_clobber
     hist_el = root.find("History")
     out_lines.extend(gen_history(hist_el, 1))
 
-    # Close PisiPackage
+    # Close LuppoPackage
     out_lines.append("}")
 
     # Write
@@ -381,8 +381,8 @@ def convert_one(xml_path: str, kdl_path: str, *, force: bool = False, no_clobber
 
 def main():
     import argparse
-    ap = argparse.ArgumentParser(description="Batch convert pspec.xml → pspec.kdl")
-    ap.add_argument("paths", nargs="*", help="Paths to pspec.xml files or directories to scan")
+    ap = argparse.ArgumentParser(description="Batch convert lopec.xml → lopec.kdl")
+    ap.add_argument("paths", nargs="*", help="Paths to lopec.xml files or directories to scan")
     ap.add_argument("--force", "-f", action="store_true", help="Overwrite existing .kdl files")
     ap.add_argument("--no-clobber", action="store_true", help="Skip if .kdl exists")
     ap.add_argument("--recursive", "-r", action="store_true", help="Scan directories recursively")
@@ -397,29 +397,29 @@ def main():
             if args.recursive:
                 for dirpath, _, filenames in os.walk(p):
                     for fn in filenames:
-                        if fn == "pspec.xml":
+                        if fn == "lopec.xml":
                             files.append(os.path.join(dirpath, fn))
             else:
                 for fn in os.listdir(p):
-                    if fn == "pspec.xml":
+                    if fn == "lopec.xml":
                         files.append(os.path.join(p, fn))
 
     if not files:
-        print("No pspec.xml files found.")
+        print("No lopec.xml files found.")
         sys.exit(1)
 
     ok = skip = fail = 0
     for fpath in sorted(files):
         dpath = os.path.dirname(fpath)
-        # Çıktı her zaman pspec.kdl
+        # Çıktı her zaman lopec.kdl
         try:
             name_tree = ET.parse(fpath)
             name_root = name_tree.getroot()
             name_src = name_root.find("Source")
-            pkg_name = text(name_src.find("Name")) if name_src is not None else "pspec"
+            pkg_name = text(name_src.find("Name")) if name_src is not None else "lopec"
         except Exception:
-            pkg_name = "pspec"
-        kpath = os.path.join(dpath, "pspec.kdl")
+            pkg_name = "lopec"
+        kpath = os.path.join(dpath, "lopec.kdl")
         status, msg = convert_one(fpath, kpath, force=args.force, no_clobber=args.no_clobber)
         if status:
             ok += 1

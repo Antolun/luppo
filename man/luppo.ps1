@@ -2,12 +2,12 @@
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
+Register-ArgumentCompleter -Native -CommandName 'luppo' -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
     $commandElements = $commandAst.CommandElements
     $command = @(
-        'pisi'
+        'luppo'
         for ($i = 1; $i -lt $commandElements.Count; $i++) {
             $element = $commandElements[$i]
             if ($element -isnot [StringConstantExpressionAst] -or
@@ -20,7 +20,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
     }) -join ';'
 
     $completions = @(switch ($command) {
-        'pisi' {
+        'luppo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -94,7 +94,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('temp', 'temp', [CompletionResultType]::ParameterValue, 'temp')
             break
         }
-        'pisi;add-repo' {
+        'luppo;add-repo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -121,7 +121,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;blame' {
+        'luppo;blame' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -148,7 +148,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;build' {
+        'luppo;build' {
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'j')
             [CompletionResult]::new('--jobs', '--jobs', [CompletionResultType]::ParameterName, 'jobs')
             [CompletionResult]::new('--target', '--target', [CompletionResultType]::ParameterName, 'target')
@@ -178,7 +178,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;check-install' {
+        'luppo;check-install' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -205,7 +205,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;check-components' {
+        'luppo;check-components' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -232,7 +232,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;reset-history' {
+        'luppo;reset-history' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -259,7 +259,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;check-repo' {
+        'luppo;check-repo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -287,7 +287,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;repo-diff' {
+        'luppo;repo-diff' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -314,7 +314,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;toolchain' {
+        'luppo;toolchain' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -343,7 +343,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;clean' {
+        'luppo;clean' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -370,7 +370,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;configure-pending' {
+        'luppo;configure-pending' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -397,7 +397,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;delete-cache' {
+        'luppo;delete-cache' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -424,7 +424,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;delta' {
+        'luppo;delta' {
             [CompletionResult]::new('--output-dir', '--output-dir', [CompletionResultType]::ParameterName, 'output-dir')
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
@@ -452,7 +452,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;disable-repo' {
+        'luppo;disable-repo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -479,7 +479,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;emerge' {
+        'luppo;emerge' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -507,7 +507,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;emerge-up' {
+        'luppo;emerge-up' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -534,7 +534,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;enable-repo' {
+        'luppo;enable-repo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -561,7 +561,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;fetch' {
+        'luppo;fetch' {
             [CompletionResult]::new('-o', '-o', [CompletionResultType]::ParameterName, 'o')
             [CompletionResult]::new('--output-dir', '--output-dir', [CompletionResultType]::ParameterName, 'output-dir')
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
@@ -591,7 +591,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;graph' {
+        'luppo;graph' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -619,7 +619,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;help' {
+        'luppo;help' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -646,7 +646,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;history' {
+        'luppo;history' {
             [CompletionResult]::new('--from', '--from', [CompletionResultType]::ParameterName, 'from')
             [CompletionResult]::new('--to', '--to', [CompletionResultType]::ParameterName, 'to')
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
@@ -676,7 +676,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;index' {
+        'luppo;index' {
             [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, 'output')
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
@@ -704,7 +704,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;info' {
+        'luppo;info' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -731,7 +731,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;install' {
+        'luppo;install' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -767,7 +767,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-available' {
+        'luppo;list-available' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -795,7 +795,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-components' {
+        'luppo;list-components' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -823,7 +823,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-files' {
+        'luppo;list-files' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -850,7 +850,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-installed' {
+        'luppo;list-installed' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -878,7 +878,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-newest' {
+        'luppo;list-newest' {
             [CompletionResult]::new('--limit', '--limit', [CompletionResultType]::ParameterName, 'limit')
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
@@ -906,7 +906,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-orphaned' {
+        'luppo;list-orphaned' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -934,7 +934,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-pending' {
+        'luppo;list-pending' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -962,7 +962,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-repo' {
+        'luppo;list-repo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -990,7 +990,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-sources' {
+        'luppo;list-sources' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1018,7 +1018,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;list-upgrades' {
+        'luppo;list-upgrades' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1046,7 +1046,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;rebuild-db' {
+        'luppo;rebuild-db' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1073,7 +1073,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;remove' {
+        'luppo;remove' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1103,7 +1103,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;remove-orphaned' {
+        'luppo;remove-orphaned' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1131,7 +1131,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;remove-repo' {
+        'luppo;remove-repo' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1158,7 +1158,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;rollback' {
+        'luppo;rollback' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1185,35 +1185,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;search' {
-            [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
-            [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
-            [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
-            [CompletionResult]::new('--bandwidth-limit', '--bandwidth-limit', [CompletionResultType]::ParameterName, 'bandwidth-limit')
-            [CompletionResult]::new('-u', '-u', [CompletionResultType]::ParameterName, 'u')
-            [CompletionResult]::new('--username', '--username', [CompletionResultType]::ParameterName, 'username')
-            [CompletionResult]::new('-p', '-p', [CompletionResultType]::ParameterName, 'p')
-            [CompletionResult]::new('--password', '--password', [CompletionResultType]::ParameterName, 'password')
-            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'j')
-            [CompletionResult]::new('--jobs', '--jobs', [CompletionResultType]::ParameterName, 'jobs')
-            [CompletionResult]::new('--log-path', '--log-path', [CompletionResultType]::ParameterName, 'log-path')
-            [CompletionResult]::new('--opt-level', '--opt-level', [CompletionResultType]::ParameterName, 'opt-level')
-            [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'json')
-            [CompletionResult]::new('-y', '-y', [CompletionResultType]::ParameterName, 'y')
-            [CompletionResult]::new('--yes-all', '--yes-all', [CompletionResultType]::ParameterName, 'yes-all')
-            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'v')
-            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'verbose')
-            [CompletionResult]::new('-d', '-d', [CompletionResultType]::ParameterName, 'd')
-            [CompletionResult]::new('--debug', '--debug', [CompletionResultType]::ParameterName, 'debug')
-            [CompletionResult]::new('-N', '-N ', [CompletionResultType]::ParameterName, 'N')
-            [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'no-color')
-            [CompletionResult]::new('--download-only', '--download-only', [CompletionResultType]::ParameterName, 'download-only')
-            [CompletionResult]::new('--ignore-check', '--ignore-check', [CompletionResultType]::ParameterName, 'ignore-check')
-            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
-            break
-        }
-        'pisi;search-file' {
+        'luppo;search' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1241,7 +1213,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;update-repo' {
+        'luppo;search-file' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1269,7 +1241,35 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;upgrade' {
+        'luppo;update-repo' {
+            [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
+            [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
+            [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
+            [CompletionResult]::new('--bandwidth-limit', '--bandwidth-limit', [CompletionResultType]::ParameterName, 'bandwidth-limit')
+            [CompletionResult]::new('-u', '-u', [CompletionResultType]::ParameterName, 'u')
+            [CompletionResult]::new('--username', '--username', [CompletionResultType]::ParameterName, 'username')
+            [CompletionResult]::new('-p', '-p', [CompletionResultType]::ParameterName, 'p')
+            [CompletionResult]::new('--password', '--password', [CompletionResultType]::ParameterName, 'password')
+            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'j')
+            [CompletionResult]::new('--jobs', '--jobs', [CompletionResultType]::ParameterName, 'jobs')
+            [CompletionResult]::new('--log-path', '--log-path', [CompletionResultType]::ParameterName, 'log-path')
+            [CompletionResult]::new('--opt-level', '--opt-level', [CompletionResultType]::ParameterName, 'opt-level')
+            [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'json')
+            [CompletionResult]::new('-y', '-y', [CompletionResultType]::ParameterName, 'y')
+            [CompletionResult]::new('--yes-all', '--yes-all', [CompletionResultType]::ParameterName, 'yes-all')
+            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'v')
+            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'verbose')
+            [CompletionResult]::new('-d', '-d', [CompletionResultType]::ParameterName, 'd')
+            [CompletionResult]::new('--debug', '--debug', [CompletionResultType]::ParameterName, 'debug')
+            [CompletionResult]::new('-N', '-N ', [CompletionResultType]::ParameterName, 'N')
+            [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'no-color')
+            [CompletionResult]::new('--download-only', '--download-only', [CompletionResultType]::ParameterName, 'download-only')
+            [CompletionResult]::new('--ignore-check', '--ignore-check', [CompletionResultType]::ParameterName, 'ignore-check')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'luppo;upgrade' {
             [CompletionResult]::new('--component', '--component', [CompletionResultType]::ParameterName, 'component')
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
@@ -1300,7 +1300,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;version' {
+        'luppo;version' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')
@@ -1327,7 +1327,7 @@ Register-ArgumentCompleter -Native -CommandName 'pisi' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
-        'pisi;temp' {
+        'luppo;temp' {
             [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'D')
             [CompletionResult]::new('--destdir', '--destdir', [CompletionResultType]::ParameterName, 'destdir')
             [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'L')

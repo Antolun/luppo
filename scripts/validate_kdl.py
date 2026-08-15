@@ -6,16 +6,16 @@ import subprocess, glob, os, sys, tempfile
 import json
 
 def main():
-    base = "/media/pisicik/DEPO/PISILINUX/PisiLinux_docker/core/system/base"
+    base = "/media/luppocuk/REPO/LUPUS/LupuS_docker/core/system/base"
     kdl_files = []
     for dirpath, _, fnames in os.walk(base):
         for fn in fnames:
-            if fn == "pspec.kdl":
+            if fn == "lopec.kdl":
                 kdl_files.append(os.path.join(dirpath, fn))
 
     # Also add project-level ones
-    proj = "/media/pisicik/DEPO/RUST/projeler/pisi"
-    for fn in ["pisi.kdl", "pisi_template.kdl", "pspec.kdl"]:
+    proj = "/media/luppocuk/REPO/RUST/project/luppo"
+    for fn in ["luppo.kdl", "luppo_template.kdl", "lopec.kdl"]:
         kdl_files.append(os.path.join(proj, fn))
 
     ok = fail = 0

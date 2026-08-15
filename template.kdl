@@ -1,10 +1,10 @@
-PisiPackage {
+LuppoPackage {
     Source {
         Name ""
         Homepage ""
         Packager {
-            Name "PisiLinux Community"
-            Email "admins@pisilinux.org"
+            Name "Antolun Community"
+            Email "admins@antolun.com"
         }
         License "FTL"
         License "GPLv2"
@@ -30,7 +30,7 @@ PisiPackage {
         Name "freetype"
         Summary ""
         Description ""
-        Icon "pisi-software-all"
+        Icon "luppo-software-all"
         Screenshot ""
         PartOf ""
         RuntimeDependencies {
@@ -46,7 +46,7 @@ PisiPackage {
             steps "./configure --with-harfbuzz=no --enable-freetype-config --with-brotli=yes"
             steps "make"
             steps "make DESTDIR={install_root} install"
-            steps "pisitools.dodoc('ChangeLog', 'README')"
+            steps "luppotools.dodoc('ChangeLog', 'README')"
         }
     }
 
@@ -54,7 +54,7 @@ PisiPackage {
         Name "package-devel"
         Summary ""
         Summary lang="tr" ""
-        Icon "pisi-software-all"
+        Icon "luppo-software-all"
         Screenshot ""
         PartOf "system.devel"
         RuntimeDependencies {
@@ -74,7 +74,7 @@ PisiPackage {
         Name "package-32bit"
         Summary ""
         Summary lang="tr" ""
-        Icon "pisi-software-all"
+        Icon "luppo-software-all"
         Screenshot ""
         PartOf "emul32"
         BuildType "emul32"
@@ -100,8 +100,8 @@ PisiPackage {
         Update release=1 date="2026-03-23" {
             Version "2.14.3"
             Comment "Version bump."
-            Name "Pisi Linux Community"
-            Email "admin@pisilinux.org"
+            Name "Antolun Community"
+            Email "admin@antolun.com"
         }
     }
 }

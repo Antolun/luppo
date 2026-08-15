@@ -17,20 +17,20 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
-COPY pisi-core/Cargo.toml pisi-core/
-COPY pisi-spec/Cargo.toml pisi-spec/
-COPY pisi-builder/Cargo.toml pisi-builder/
-COPY pisi/Cargo.toml pisi/
+COPY luppo-core/Cargo.toml luppo-core/
+COPY luppo-spec/Cargo.toml luppo-spec/
+COPY luppo-builder/Cargo.toml luppo-builder/
+COPY luppo/Cargo.toml luppo/
 
 # Create dummy source files to cache dependencies
-RUN mkdir -p pisi-core/src pisi-spec/src pisi-builder/src pisi/src
-RUN echo "fn main() {}" > pisi/src/main.rs
-RUN echo "" > pisi-core/src/lib.rs
-RUN echo "" > pisi-spec/src/lib.rs
-RUN echo "" > pisi-builder/src/lib.rs
+RUN mkdir -p luppo-core/src luppo-spec/src luppo-builder/src luppo/src
+RUN echo "fn main() {}" > luppo/src/main.rs
+RUN echo "" > luppo-core/src/lib.rs
+RUN echo "" > luppo-spec/src/lib.rs
+RUN echo "" > luppo-builder/src/lib.rs
 
 RUN cargo build --workspace --release
-RUN rm -rf pisi-core/src pisi-spec/src pisi-builder/src pisi/src
+RUN rm -rf luppo-core/src luppo-spec/src luppo-builder/src luppo/src
 
 # Copy actual source
 COPY . .
@@ -53,14 +53,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/pisi /usr/local/bin/pisi
+COPY --from=builder /app/target/release/luppo /usr/local/bin/luppo
 COPY --from=builder /app/locales /app/locales
 
 # Create necessary directories
-RUN mkdir -p /var/lib/pisi/db /var/cache/pisi /var/pisi /run/lock/subsys /etc/pisi
+RUN mkdir -p /var/lib/luppo/db /var/cache/luppo /var/luppo /run/lock/subsys /etc/luppo
 
 # Default config
-RUN echo 'general = { destination_directory = "/", architecture = "x86_64" }' > /etc/pisi/pisi.conf
+RUN echo 'general = { destination_directory = "/", architecture = "x86_64" }' > /etc/luppo/luppo.conf
 
-ENTRYPOINT ["pisi"]
+ENTRYPOINT ["luppo"]
 CMD ["--help"]

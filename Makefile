@@ -1,4 +1,4 @@
-# Makefile for pisi
+# Makefile for luppo
 
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
@@ -8,9 +8,9 @@ ZSHCOMPDIR ?= $(PREFIX)/share/zsh/site-functions
 FISHCOMPDIR ?= $(PREFIX)/share/fish/vendor_completions.d
 CARGO ?= cargo
 
-TARGET = target/release/pisi
-TARGET_LSPISI = target/release/lspisi
-TARGET_UNPISI = target/release/unpisi
+TARGET = target/release/luppo
+TARGET_LSLUPPO = target/release/lsluppo
+TARGET_UNLUPPO = target/release/unluppo
 
 .PHONY: all build install clean uninstall man completions docs gen_man
 
@@ -20,18 +20,18 @@ build:
 	$(CARGO) build --release
 
 install: build
-	install -Dm755 $(TARGET) $(DESTDIR)$(BINDIR)/pisi
-	install -Dm755 $(TARGET_LSPISI) $(DESTDIR)$(BINDIR)/lspisi
-	install -Dm755 $(TARGET_UNPISI) $(DESTDIR)$(BINDIR)/unpisi
-	install -Dm644 mirrors.conf $(DESTDIR)/etc/pisi/mirrors.conf
-	install -Dm644 pisi.conf $(DESTDIR)/etc/pisi/pisi.conf
+	install -Dm755 $(TARGET) $(DESTDIR)$(BINDIR)/luppo
+	install -Dm755 $(TARGET_LSLUPPO) $(DESTDIR)$(BINDIR)/lsluppo
+	install -Dm755 $(TARGET_UNLUPPO) $(DESTDIR)$(BINDIR)/unluppo
+	install -Dm644 mirrors.conf $(DESTDIR)/etc/luppo/mirrors.conf
+	install -Dm644 luppo.conf $(DESTDIR)/etc/luppo/luppo.conf
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/pisi
-	rm -f $(DESTDIR)$(BINDIR)/lspisi
-	rm -f $(DESTDIR)$(BINDIR)/unpisi
-	rm -f $(DESTDIR)/etc/pisi/mirrors.conf
-	rm -f $(DESTDIR)/etc/pisi/pisi.conf
+	rm -f $(DESTDIR)$(BINDIR)/luppo
+	rm -f $(DESTDIR)$(BINDIR)/lsluppo
+	rm -f $(DESTDIR)$(BINDIR)/unluppo
+	rm -f $(DESTDIR)/etc/luppo/mirrors.conf
+	rm -f $(DESTDIR)/etc/luppo/luppo.conf
 
 clean:
 	$(CARGO) clean
@@ -39,25 +39,25 @@ clean:
 man:
 	@mkdir -p man
 	@echo "Generating man page..."
-	@$(CARGO) run --manifest-path pisi/Cargo.toml --features generate --bin gen_man 2>/dev/null || \
+	@$(CARGO) run --manifest-path luppo/Cargo.toml --features generate --bin gen_man 2>/dev/null || \
 		( \
 			echo "Building gen_man binary..."; \
-			$(CARGO) build --manifest-path pisi/Cargo.toml --features generate --bin gen_man; \
+			$(CARGO) build --manifest-path luppo/Cargo.toml --features generate --bin gen_man; \
 			./target/debug/gen_man; \
 		)
-	@install -Dm644 man/pisi.1 $(DESTDIR)$(MANDIR)/pisi.1
+	@install -Dm644 man/luppo.1 $(DESTDIR)$(MANDIR)/luppo.1
 
 completions:
 	@mkdir -p man
-	@$(CARGO) build --manifest-path pisi/Cargo.toml --features generate --bin gen_man
+	@$(CARGO) build --manifest-path luppo/Cargo.toml --features generate --bin gen_man
 	@./target/debug/gen_man
-	@install -Dm644 man/pisi.bash $(DESTDIR)$(COMPLETIONDIR)/pisi
-	@install -Dm644 man/pisi.zsh $(DESTDIR)$(ZSHCOMPDIR)/_pisi
-	@install -Dm644 man/pisi.fish $(DESTDIR)$(FISHCOMPDIR)/pisi.fish
+	@install -Dm644 man/luppo.bash $(DESTDIR)$(COMPLETIONDIR)/luppo
+	@install -Dm644 man/luppo.zsh $(DESTDIR)$(ZSHCOMPDIR)/_luppo
+	@install -Dm644 man/luppo.fish $(DESTDIR)$(FISHCOMPDIR)/luppo.fish
 
 docs: man completions
 
 gen_man:
 	@mkdir -p man
-	@$(CARGO) build --manifest-path pisi/Cargo.toml --features generate --bin gen_man
+	@$(CARGO) build --manifest-path luppo/Cargo.toml --features generate --bin gen_man
 	@./target/debug/gen_man

@@ -1,8 +1,8 @@
-#compdef pisi
+#compdef luppo
 
 autoload -U is-at-least
 
-_pisi() {
+_luppo() {
     typeset -A opt_args
     typeset -a _arguments_options
     local ret=1
@@ -41,14 +41,14 @@ _pisi() {
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
-":: :_pisi_commands" \
-"*::: :->pisi" \
+":: :_luppo_commands" \
+"*::: :->luppo" \
 && ret=0
     case $state in
-    (pisi)
+    (luppo)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:pisi-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:luppo-command-$line[1]:"
         case $line[1] in
             (add-repo)
 _arguments "${_arguments_options[@]}" : \
@@ -1388,8 +1388,8 @@ _arguments "${_arguments_options[@]}" : \
 esac
 }
 
-(( $+functions[_pisi_commands] )) ||
-_pisi_commands() {
+(( $+functions[_luppo_commands] )) ||
+_luppo_commands() {
     local commands; commands=(
 'add-repo:' \
 'blame:' \
@@ -1437,236 +1437,236 @@ _pisi_commands() {
 'version:' \
 'temp:' \
     )
-    _describe -t commands 'pisi commands' commands "$@"
+    _describe -t commands 'luppo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__add-repo_commands] )) ||
-_pisi__subcmd__add-repo_commands() {
+(( $+functions[_luppo__subcmd__add-repo_commands] )) ||
+_luppo__subcmd__add-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi add-repo commands' commands "$@"
+    _describe -t commands 'luppo add-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__blame_commands] )) ||
-_pisi__subcmd__blame_commands() {
+(( $+functions[_luppo__subcmd__blame_commands] )) ||
+_luppo__subcmd__blame_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi blame commands' commands "$@"
+    _describe -t commands 'luppo blame commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__build_commands] )) ||
-_pisi__subcmd__build_commands() {
+(( $+functions[_luppo__subcmd__build_commands] )) ||
+_luppo__subcmd__build_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi build commands' commands "$@"
+    _describe -t commands 'luppo build commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__check-components_commands] )) ||
-_pisi__subcmd__check-components_commands() {
+(( $+functions[_luppo__subcmd__check-components_commands] )) ||
+_luppo__subcmd__check-components_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi check-components commands' commands "$@"
+    _describe -t commands 'luppo check-components commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__check-install_commands] )) ||
-_pisi__subcmd__check-install_commands() {
+(( $+functions[_luppo__subcmd__check-install_commands] )) ||
+_luppo__subcmd__check-install_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi check-install commands' commands "$@"
+    _describe -t commands 'luppo check-install commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__check-repo_commands] )) ||
-_pisi__subcmd__check-repo_commands() {
+(( $+functions[_luppo__subcmd__check-repo_commands] )) ||
+_luppo__subcmd__check-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi check-repo commands' commands "$@"
+    _describe -t commands 'luppo check-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__clean_commands] )) ||
-_pisi__subcmd__clean_commands() {
+(( $+functions[_luppo__subcmd__clean_commands] )) ||
+_luppo__subcmd__clean_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi clean commands' commands "$@"
+    _describe -t commands 'luppo clean commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__configure-pending_commands] )) ||
-_pisi__subcmd__configure-pending_commands() {
+(( $+functions[_luppo__subcmd__configure-pending_commands] )) ||
+_luppo__subcmd__configure-pending_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi configure-pending commands' commands "$@"
+    _describe -t commands 'luppo configure-pending commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__delete-cache_commands] )) ||
-_pisi__subcmd__delete-cache_commands() {
+(( $+functions[_luppo__subcmd__delete-cache_commands] )) ||
+_luppo__subcmd__delete-cache_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi delete-cache commands' commands "$@"
+    _describe -t commands 'luppo delete-cache commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__delta_commands] )) ||
-_pisi__subcmd__delta_commands() {
+(( $+functions[_luppo__subcmd__delta_commands] )) ||
+_luppo__subcmd__delta_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi delta commands' commands "$@"
+    _describe -t commands 'luppo delta commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__disable-repo_commands] )) ||
-_pisi__subcmd__disable-repo_commands() {
+(( $+functions[_luppo__subcmd__disable-repo_commands] )) ||
+_luppo__subcmd__disable-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi disable-repo commands' commands "$@"
+    _describe -t commands 'luppo disable-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__emerge_commands] )) ||
-_pisi__subcmd__emerge_commands() {
+(( $+functions[_luppo__subcmd__emerge_commands] )) ||
+_luppo__subcmd__emerge_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi emerge commands' commands "$@"
+    _describe -t commands 'luppo emerge commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__emerge-up_commands] )) ||
-_pisi__subcmd__emerge-up_commands() {
+(( $+functions[_luppo__subcmd__emerge-up_commands] )) ||
+_luppo__subcmd__emerge-up_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi emerge-up commands' commands "$@"
+    _describe -t commands 'luppo emerge-up commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__enable-repo_commands] )) ||
-_pisi__subcmd__enable-repo_commands() {
+(( $+functions[_luppo__subcmd__enable-repo_commands] )) ||
+_luppo__subcmd__enable-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi enable-repo commands' commands "$@"
+    _describe -t commands 'luppo enable-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__fetch_commands] )) ||
-_pisi__subcmd__fetch_commands() {
+(( $+functions[_luppo__subcmd__fetch_commands] )) ||
+_luppo__subcmd__fetch_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi fetch commands' commands "$@"
+    _describe -t commands 'luppo fetch commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__graph_commands] )) ||
-_pisi__subcmd__graph_commands() {
+(( $+functions[_luppo__subcmd__graph_commands] )) ||
+_luppo__subcmd__graph_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi graph commands' commands "$@"
+    _describe -t commands 'luppo graph commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__help_commands] )) ||
-_pisi__subcmd__help_commands() {
+(( $+functions[_luppo__subcmd__help_commands] )) ||
+_luppo__subcmd__help_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi help commands' commands "$@"
+    _describe -t commands 'luppo help commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__history_commands] )) ||
-_pisi__subcmd__history_commands() {
+(( $+functions[_luppo__subcmd__history_commands] )) ||
+_luppo__subcmd__history_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi history commands' commands "$@"
+    _describe -t commands 'luppo history commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__index_commands] )) ||
-_pisi__subcmd__index_commands() {
+(( $+functions[_luppo__subcmd__index_commands] )) ||
+_luppo__subcmd__index_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi index commands' commands "$@"
+    _describe -t commands 'luppo index commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__info_commands] )) ||
-_pisi__subcmd__info_commands() {
+(( $+functions[_luppo__subcmd__info_commands] )) ||
+_luppo__subcmd__info_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi info commands' commands "$@"
+    _describe -t commands 'luppo info commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__install_commands] )) ||
-_pisi__subcmd__install_commands() {
+(( $+functions[_luppo__subcmd__install_commands] )) ||
+_luppo__subcmd__install_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi install commands' commands "$@"
+    _describe -t commands 'luppo install commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-available_commands] )) ||
-_pisi__subcmd__list-available_commands() {
+(( $+functions[_luppo__subcmd__list-available_commands] )) ||
+_luppo__subcmd__list-available_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-available commands' commands "$@"
+    _describe -t commands 'luppo list-available commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-components_commands] )) ||
-_pisi__subcmd__list-components_commands() {
+(( $+functions[_luppo__subcmd__list-components_commands] )) ||
+_luppo__subcmd__list-components_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-components commands' commands "$@"
+    _describe -t commands 'luppo list-components commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-files_commands] )) ||
-_pisi__subcmd__list-files_commands() {
+(( $+functions[_luppo__subcmd__list-files_commands] )) ||
+_luppo__subcmd__list-files_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-files commands' commands "$@"
+    _describe -t commands 'luppo list-files commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-installed_commands] )) ||
-_pisi__subcmd__list-installed_commands() {
+(( $+functions[_luppo__subcmd__list-installed_commands] )) ||
+_luppo__subcmd__list-installed_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-installed commands' commands "$@"
+    _describe -t commands 'luppo list-installed commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-newest_commands] )) ||
-_pisi__subcmd__list-newest_commands() {
+(( $+functions[_luppo__subcmd__list-newest_commands] )) ||
+_luppo__subcmd__list-newest_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-newest commands' commands "$@"
+    _describe -t commands 'luppo list-newest commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-orphaned_commands] )) ||
-_pisi__subcmd__list-orphaned_commands() {
+(( $+functions[_luppo__subcmd__list-orphaned_commands] )) ||
+_luppo__subcmd__list-orphaned_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-orphaned commands' commands "$@"
+    _describe -t commands 'luppo list-orphaned commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-pending_commands] )) ||
-_pisi__subcmd__list-pending_commands() {
+(( $+functions[_luppo__subcmd__list-pending_commands] )) ||
+_luppo__subcmd__list-pending_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-pending commands' commands "$@"
+    _describe -t commands 'luppo list-pending commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-repo_commands] )) ||
-_pisi__subcmd__list-repo_commands() {
+(( $+functions[_luppo__subcmd__list-repo_commands] )) ||
+_luppo__subcmd__list-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-repo commands' commands "$@"
+    _describe -t commands 'luppo list-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-sources_commands] )) ||
-_pisi__subcmd__list-sources_commands() {
+(( $+functions[_luppo__subcmd__list-sources_commands] )) ||
+_luppo__subcmd__list-sources_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-sources commands' commands "$@"
+    _describe -t commands 'luppo list-sources commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__list-upgrades_commands] )) ||
-_pisi__subcmd__list-upgrades_commands() {
+(( $+functions[_luppo__subcmd__list-upgrades_commands] )) ||
+_luppo__subcmd__list-upgrades_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi list-upgrades commands' commands "$@"
+    _describe -t commands 'luppo list-upgrades commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__rebuild-db_commands] )) ||
-_pisi__subcmd__rebuild-db_commands() {
+(( $+functions[_luppo__subcmd__rebuild-db_commands] )) ||
+_luppo__subcmd__rebuild-db_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi rebuild-db commands' commands "$@"
+    _describe -t commands 'luppo rebuild-db commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__remove_commands] )) ||
-_pisi__subcmd__remove_commands() {
+(( $+functions[_luppo__subcmd__remove_commands] )) ||
+_luppo__subcmd__remove_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi remove commands' commands "$@"
+    _describe -t commands 'luppo remove commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__remove-orphaned_commands] )) ||
-_pisi__subcmd__remove-orphaned_commands() {
+(( $+functions[_luppo__subcmd__remove-orphaned_commands] )) ||
+_luppo__subcmd__remove-orphaned_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi remove-orphaned commands' commands "$@"
+    _describe -t commands 'luppo remove-orphaned commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__remove-repo_commands] )) ||
-_pisi__subcmd__remove-repo_commands() {
+(( $+functions[_luppo__subcmd__remove-repo_commands] )) ||
+_luppo__subcmd__remove-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi remove-repo commands' commands "$@"
+    _describe -t commands 'luppo remove-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__repo-diff_commands] )) ||
-_pisi__subcmd__repo-diff_commands() {
+(( $+functions[_luppo__subcmd__repo-diff_commands] )) ||
+_luppo__subcmd__repo-diff_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi repo-diff commands' commands "$@"
+    _describe -t commands 'luppo repo-diff commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__reset-history_commands] )) ||
-_pisi__subcmd__reset-history_commands() {
+(( $+functions[_luppo__subcmd__reset-history_commands] )) ||
+_luppo__subcmd__reset-history_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi reset-history commands' commands "$@"
+    _describe -t commands 'luppo reset-history commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__rollback_commands] )) ||
-_pisi__subcmd__rollback_commands() {
+(( $+functions[_luppo__subcmd__rollback_commands] )) ||
+_luppo__subcmd__rollback_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi rollback commands' commands "$@"
+    _describe -t commands 'luppo rollback commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__search_commands] )) ||
-_pisi__subcmd__search_commands() {
+(( $+functions[_luppo__subcmd__search_commands] )) ||
+_luppo__subcmd__search_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi search commands' commands "$@"
+    _describe -t commands 'luppo search commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__search-file_commands] )) ||
-_pisi__subcmd__search-file_commands() {
+(( $+functions[_luppo__subcmd__search-file_commands] )) ||
+_luppo__subcmd__search-file_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi search-file commands' commands "$@"
+    _describe -t commands 'luppo search-file commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__temp_commands] )) ||
-_pisi__subcmd__temp_commands() {
+(( $+functions[_luppo__subcmd__temp_commands] )) ||
+_luppo__subcmd__temp_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi temp commands' commands "$@"
+    _describe -t commands 'luppo temp commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__toolchain_commands] )) ||
-_pisi__subcmd__toolchain_commands() {
+(( $+functions[_luppo__subcmd__toolchain_commands] )) ||
+_luppo__subcmd__toolchain_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi toolchain commands' commands "$@"
+    _describe -t commands 'luppo toolchain commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__update-repo_commands] )) ||
-_pisi__subcmd__update-repo_commands() {
+(( $+functions[_luppo__subcmd__update-repo_commands] )) ||
+_luppo__subcmd__update-repo_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi update-repo commands' commands "$@"
+    _describe -t commands 'luppo update-repo commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__upgrade_commands] )) ||
-_pisi__subcmd__upgrade_commands() {
+(( $+functions[_luppo__subcmd__upgrade_commands] )) ||
+_luppo__subcmd__upgrade_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi upgrade commands' commands "$@"
+    _describe -t commands 'luppo upgrade commands' commands "$@"
 }
-(( $+functions[_pisi__subcmd__version_commands] )) ||
-_pisi__subcmd__version_commands() {
+(( $+functions[_luppo__subcmd__version_commands] )) ||
+_luppo__subcmd__version_commands() {
     local commands; commands=()
-    _describe -t commands 'pisi version commands' commands "$@"
+    _describe -t commands 'luppo version commands' commands "$@"
 }
 
-if [ "$funcstack[1]" = "_pisi" ]; then
-    _pisi "$@"
+if [ "$funcstack[1]" = "_luppo" ]; then
+    _luppo "$@"
 else
-    compdef _pisi pisi
+    compdef _luppo luppo
 fi

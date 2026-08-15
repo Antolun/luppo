@@ -1,10 +1,10 @@
 #!/bin/bash
-# Generate man pages and shell completions for pisi-rs
+# Generate man pages and shell completions for luppo
 # Run after: cargo build --release
 
 set -e
 
-BINARY="./target/release/pisi-rs"
+BINARY="./target/release/luppo"
 OUT_DIR="./man"
 
 if [ ! -f "$BINARY" ]; then
@@ -15,7 +15,7 @@ fi
 mkdir -p "$OUT_DIR"
 
 echo "Generating man page..."
-$BINARY --help-man > "$OUT_DIR/pisi-rs.1" 2>/dev/null || {
+$BINARY --help-man > "$OUT_DIR/luppo.1" 2>/dev/null || {
     echo "Man page generation via --help-man not supported, trying alternative..."
     # Alternative: use clap_mangen programmatically
     cargo run --features generate --bin gen_man 2>/dev/null || {
@@ -26,7 +26,7 @@ $BINARY --help-man > "$OUT_DIR/pisi-rs.1" 2>/dev/null || {
 
 echo "Generating shell completions..."
 for shell in bash zsh fish powershell; do
-    $BINARY --generate-completion $shell > "$OUT_DIR/pisi-rs.$shell" 2>/dev/null || {
+    $BINARY --generate-completion $shell > "$OUT_DIR/luppo.$shell" 2>/dev/null || {
         echo "Completion generation for $shell not supported via CLI flag."
     }
 done
