@@ -1,0 +1,32 @@
+LuppoPackage {
+    Source {
+        Name "libreoffice"
+        Homepage "https://www.libreoffice.org/"
+        Summary "LibreOffice office suite"
+        License "LGPL-3.0-or-later"
+        PartOf "office.doc"
+        Packager {
+            Name "Antolun Community"
+            Email "admins@antolun.com"
+        }
+        Archive sha1sum="70cb3caabe10d8a4053bda80bc5608195f576422" type="tarxz" {
+            "https://download.documentfoundation.org/libreoffice/src/26.2.2/libreoffice-26.2.2.2.tar.xz"
+        }
+        Archive sha1sum="1f2fcba8281ff7fc9e304c45b577599c78a5f9b2" type="tarxz" {
+            "https://download.documentfoundation.org/libreoffice/src/26.2.2/libreoffice-dictionaries-26.2.2.2.tar.xz"
+        }
+    }
+    Package {
+        Name "libreoffice"
+        Summary "LibreOffice office suite (Main package)"
+        PartOf "office.doc"
+    }
+    History {
+        Update release=1 date="2026-05-17" {
+            Version "26.2.2.1"
+            Comment "Initial package template."
+            Name "Antolun Community"
+            Email "admins@antolun.com"
+        }
+    }
+}
